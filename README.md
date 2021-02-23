@@ -16,7 +16,9 @@ wifibroadcast
 
     wifibroadcast repositories must have the same gs.key and drone.key
 
-sudo run air.sh and ground.sh 
+sudo ./air.sh
+sudo ./ground.sh 
+
   ping 10.0.1.1
   remove su=pi, and check
   ssh 10.0.1.1
