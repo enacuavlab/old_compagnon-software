@@ -1,5 +1,10 @@
 # compagnon-software
 
+Ubuntu/Debian :
+  Internal wifi should be poweroff
+  Service should be restart after boot (plugging the dongle will start the service)
+  External USB wifi dongle can be plugged and unplugged
+
 -------------------------------------------------------------------------------
 rtl8812au 
 
@@ -31,20 +36,19 @@ wifibroadcast
   wifibroadcast repositories must have the same gs.key and drone.key
 
 -------------------------------------------------------------------------------
-sudo cp wifibroadcast/scripts/wifibroadcast.service /etc/systemd/system
+sudo cp wifibroadcast.service /etc/systemd/system
 sudo cp 60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules && udevadm trigger
 
+systemctl start wifibroadcast.service
+systemctl stop wifibroadcast.service
 systemctl status wifibroadcast.service
 
-wl=`lshw -businfo 2>/dev/null | grep "^usb" | grep network | awk '{print $2}'`
-ph=`iw dev $wl info | grep wiphy | awk '{print "phy"$2}'`
-nb=`rfkill --raw | grep $ph | awk '{print $1}'`
-rfkill unblock $nb
-
-
-sudo ./air.sh
-sudo ./ground.sh 
+-------------------------------------------------------------------------------
+ISSUES:
+  
+  Ubuntu/Debian 
+    ping and ssh not working
 
 ping 10.0.1.1
 remove su=pi, and check
