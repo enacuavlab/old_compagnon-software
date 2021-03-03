@@ -1,5 +1,11 @@
 # compagnon-software
 
+git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
+
+-------------------------------------------------------------------------------
+sudo apt-get install v4l-utils
+
+-------------------------------------------------------------------------------
 Ubuntu/Debian :
   Internal wifi should be poweroff
   Service should be restart after boot (plugging the dongle will start the service)
@@ -8,14 +14,14 @@ Ubuntu/Debian :
 -------------------------------------------------------------------------------
 rtl8812au 
 
-  Ubuntu/Debian
+  Ubuntu/Debian, Jetpack(xavierNX)(*)
     cd rtl8812au
     sudo apt-get install dkms
     sudo make dkms_install
     sudo apt-get install ethtool
     ethtool -i wlx0013eff21898
 
-  Raspbian
+  Raspbian, JetPack
     RPI 1/2/3/ & 0/Zero
       sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile
       sed -i 's/CONFIG_PLATFORM_ARM_RPI = n/CONFIG_PLATFORM_ARM_RPI = y/g' Makefile
@@ -23,7 +29,11 @@ rtl8812au
       sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile
       sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' Makefile
     make 
-    make install
+    (sudo)make install
+
+(*)
+/etc/modprobe.d/blacklist.conf
+blacklist rtl8812au
 
 -------------------------------------------------------------------------------
 wifibroadcast
