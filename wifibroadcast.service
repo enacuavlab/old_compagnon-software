@@ -4,6 +4,7 @@
 [Unit]
 Description=Wifibroadcast server
 After=network.target
+After=sys-subsystem-net-devices-wlan0.device
 #After=network.target sys-subsystem-net-devices-wlx00c0caa578a9.device
 #Requires=sys-subsystem-net-devices-wlx00c0caa578a9.device
 
@@ -11,8 +12,8 @@ After=network.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/home/pprz/Projects/compagnon-software/ground_on.sh
-ExecStop=/home/pprz/Projects/compagnon-software/ground_off.sh
+ExecStart=/home/pprz/Projects/compagnon-software/wfb_on.sh
+ExecStop=/home/pprz/Projects/compagnon-software/wfb_off.sh
 
 [Install]
 WantedBy=multi-user.target

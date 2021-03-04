@@ -3,7 +3,7 @@
 git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
 
 -------------------------------------------------------------------------------
-sudo apt-get install v4l-utils
+sudo apt-get install v4l-utils socat
 
 -------------------------------------------------------------------------------
 Ubuntu/Debian :
