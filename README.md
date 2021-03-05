@@ -1,5 +1,11 @@
 # compagnon-software
 
+This project provides the software for ground and board systems. 
+It can be run on Raspbian, Ubuntu/Debian and Jetpack.
+It has been tested on Raspberry PI(0,3,4), PC386, Jetson Xavier NX
+
+-------------------------------------------------------------------------------
+cd Projects
 git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
 
 -------------------------------------------------------------------------------
@@ -46,13 +52,21 @@ wifibroadcast
   wifibroadcast repositories must have the same gs.key and drone.key
 
 -------------------------------------------------------------------------------
+Update HOME in air.sh,ground.sh,wfb_on.sh
+Update "air.sh or ground.sh" in wfb_on.sh
+Update ExecStart,ExecStop in wifibroadcast.service
+Update "air_campi.sh or air_camjet.sh" in air.sh
+
+-------------------------------------------------------------------------------
 sudo cp wifibroadcast.service /etc/systemd/system
 sudo cp 60-wifibroadcast.rules /etc/udev/rules.d
-sudo udevadm control --reload-rules && udevadm trigger
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 
 systemctl start wifibroadcast.service
 systemctl stop wifibroadcast.service
 systemctl status wifibroadcast.service
+systemctl disable wifibroadcast.service
 
 -------------------------------------------------------------------------------
 ISSUES:

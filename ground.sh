@@ -7,16 +7,19 @@
 HOME_WFB=/home/pprz/Projects/compagnon-software/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 
+GCS_IP=192.168.174.194
+#GCS_IP=127.0.0.1
+
 if [ -n "$1" ]; then
 
   wl=$1
 
-  $HOME_WFB/wfb_rx -K $HOME_WFB/drone.key -p 1 -u 5600 -c 127.0.0.1 $wl > /dev/null 2>&1 &
+  $HOME_WFB/wfb_rx -K $HOME_WFB/drone.key -p 1 -u 5600 -c $GCS_IP $wl > /dev/null 2>&1 &
   echo $! > $PIDFILE
-#  $HOME_WFB/wfb_rx -K $HOME_WFB/drone.key -p 2 -u 4242 -c $GCS_IP -k 1 -n 2 $wl > /dev/null 2>&1 &
-#  echo $! >> $PIDFILE
-#  $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 3 -u 4243 -k 1 -n 2 $wl > /dev/null 2>&1 &
-#  echo $! >> $PIDFILE
+  $HOME_WFB/wfb_rx -K $HOME_WFB/drone.key -p 2 -u 4242 -c $GCS_IP -k 1 -n 2 $wl > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
+  $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 3 -u 4243 -k 1 -n 2 $wl > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
 
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 4 -u 14800 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
