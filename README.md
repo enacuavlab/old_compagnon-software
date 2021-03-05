@@ -69,6 +69,11 @@ systemctl status wifibroadcast.service
 systemctl disable wifibroadcast.service
 
 -------------------------------------------------------------------------------
+Raspbian
+/etc/rc.local
+su root -c /home/pi/Projects/compagnon-software/wfb_on.sh &
+
+-------------------------------------------------------------------------------
 ISSUES:
   
   Ubuntu/Debian 

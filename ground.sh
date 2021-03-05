@@ -7,8 +7,8 @@
 HOME_WFB=/home/pprz/Projects/compagnon-software/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 
-GCS_IP=192.168.174.194
-#GCS_IP=127.0.0.1
+#GCS_IP=192.168.174.194
+GCS_IP=127.0.0.1
 
 if [ -n "$1" ]; then
 
@@ -27,13 +27,12 @@ if [ -n "$1" ]; then
   echo $! >> $PIDFILE
   
   #gst-launch-1.0 udpsrc port=5600 ! application/x-rtp,encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink &
- 
-  socat TUN:10.0.1.1/24,tun-name=groundtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14800  > /dev/null 2>&1 &
+
+  socat TUN:10.0.1.1/24,tun-name=groundtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14800 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
-  socat udp-listen:14801,reuseaddr,fork TUN:10.0.1.1/24,tun-name=groundtunrx,iff-no-pi,tun-type=tun,iff-up  > /dev/null 2>&1 &
+  socat udp-listen:14801,reuseaddr,fork  TUN:10.0.1.1/24,tun-name=groundtunrx,iff-no-pi,tun-type=tun,iff-up > /dev/null 2>&1 &
   echo $! >> $PIDFILE
-#  socat udp-listen:14801,bind=10.0.1.1 TUN:10.0.1.1/24,tun-name=groundtunrx,iff-no-pi,tun-type=tun,iff-up  > /dev/null 2>&1 &
-#  echo $! >> $PIDFILE
+
   sleep 1
   ifconfig groundtuntx mtu 1400 up &
 
