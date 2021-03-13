@@ -3,15 +3,13 @@
 
 [Unit]
 Description=Wifibroadcast server
-After=network.target
-After=sys-subsystem-net-devices-wlan0.device
-#After=network.target sys-subsystem-net-devices-wlx00c0caa578a9.device
-#Requires=sys-subsystem-net-devices-wlx00c0caa578a9.device
-
+After=multi-user.target
 
 [Service]
-Type=oneshot
+Type=idle
+#Type=oneshot
 RemainAfterExit=yes
+ExecStartPre=/bin/sleep 2
 ExecStart=/home/pprz/Projects/compagnon-software/wfb_on.sh
 ExecStop=/home/pprz/Projects/compagnon-software/wfb_off.sh
 

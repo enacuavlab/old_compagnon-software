@@ -26,7 +26,7 @@ v4l2-ctl --device /dev/video0 \
     ! video/x-h264,stream-format=byte-stream,alignment=au \
     ! rtph264pay name=pay0 pt=96 config-interval=1 \
     ! udpsink host=127.0.0.1 port=5700  > /dev/null 2>&1 &
-  echo $! > $PIDFILE
+  echo $! >> $PIDFILE
 
  
 #v4l2-ctl --device /dev/video0 --set-ctrl video_bitrate=$BITRATE_VIDEO2 

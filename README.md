@@ -27,7 +27,7 @@ rtl8812au
     sudo apt-get install ethtool
     ethtool -i wlx0013eff21898
 
-  Raspbian, JetPack
+  Raspbian
     RPI 1/2/3/ & 0/Zero
       sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile
       sed -i 's/CONFIG_PLATFORM_ARM_RPI = n/CONFIG_PLATFORM_ARM_RPI = y/g' Makefile
@@ -63,23 +63,14 @@ sudo cp 60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
+systemctl enable wifibroadcast.service
 systemctl start wifibroadcast.service
 systemctl stop wifibroadcast.service
 systemctl status wifibroadcast.service
 systemctl disable wifibroadcast.service
-
+systemctl daemon-reload
 -------------------------------------------------------------------------------
 Raspbian
 /etc/rc.local
 su root -c /home/pi/Projects/compagnon-software/wfb_on.sh &
 
--------------------------------------------------------------------------------
-ISSUES:
-  
-  Ubuntu/Debian 
-    ping and ssh not working
-
-ping 10.0.1.1
-remove su=pi, and check
-ssh 10.0.1.1
-ssh 10.0.1.2
