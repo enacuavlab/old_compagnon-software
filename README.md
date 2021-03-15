@@ -69,8 +69,4 @@ systemctl stop wifibroadcast.service
 systemctl status wifibroadcast.service
 systemctl disable wifibroadcast.service
 systemctl daemon-reload
--------------------------------------------------------------------------------
-Raspbian
-/etc/rc.local
-su root -c /home/pi/Projects/compagnon-software/wfb_on.sh &
 

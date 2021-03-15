@@ -32,10 +32,8 @@ if [ -n "$1" ]; then
   socat udp-listen:14901,reuseaddr,fork TUN:10.0.1.2/24,tun-name=airtunrx,iff-no-pi,tun-type=tun,iff-up > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   sleep 1
-  ping 10.0.1.1 -c 1 &
-  sleep 1
-  sysctl -w net.ipv4.conf.airtunrx.rp_filter=2
-  sleep 1
   ifconfig airtuntx mtu 1400 up &
+
+  while [ ! "`sysctl -w net.ipv4.conf.airtunrx.rp_filter=2`" = "net.ipv4.conf.airtunrx.rp_filter = 2" ];do sleep 1; done
 
 fi

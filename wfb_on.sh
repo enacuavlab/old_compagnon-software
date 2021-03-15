@@ -23,6 +23,6 @@ if ls $DEVICE 1> /dev/null 2>&1; then
     #iw $wl info
 
     #$HOME_PRJ/air.sh $wl
-    #$HOME_PRJ/ground.sh $wl  
+    $HOME_PRJ/ground.sh $wl  
   fi
 fi
