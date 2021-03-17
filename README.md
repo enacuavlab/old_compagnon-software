@@ -40,11 +40,12 @@ rtl8812au
 (*)
 /etc/modprobe.d/blacklist.conf
 blacklist rtl8812au
+git clone -b v4.3.21 https://github.com/aircrack-ng/rtl8812au.git
 
 -------------------------------------------------------------------------------
 wifibroadcast
 
-  Ubuntu/Debian Raspbian
+  Ubuntu/Debian, Jetpack, Raspbian
     cd wifibroadcast
     sudo apt-get install libpcap-dev libsodium-dev -y
     make all_bin gs.key
