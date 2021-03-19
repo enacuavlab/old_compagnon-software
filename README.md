@@ -40,7 +40,7 @@ rtl8812au
 (*)
 /etc/modprobe.d/blacklist.conf
 blacklist rtl8812au
-git clone -b v4.3.21 https://github.com/aircrack-ng/rtl8812au.git
+git clone -b v5.7.0 https://github.com/aircrack-ng/rtl8812au.git
 
 -------------------------------------------------------------------------------
 wifibroadcast
