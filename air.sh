@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOME_PRJ=/home/pi/Projects/compagnon-software/
+HOME_PRJ=/home/pprz/Projects/compagnon-software/
 HOME_WFB=$HOME_PRJ/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 
@@ -19,8 +19,8 @@ if [ -n "$1" ]; then
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 5 -u 14900 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
-  $HOME_PRJ/air_campi.sh
-  #$HOME_PRJ/air_camjet.sh
+  if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then $HOME_PRJ/air_camjet.sh;
+  else $HOME_PRJ/air_campi.sh;fi
 
   socat -u /dev/ttyAMA0,raw,echo=0,b115200 udp-sendto:127.0.0.1:4244 > /dev/null 2>&1 &
   echo $! >> $PIDFILE

@@ -22,8 +22,12 @@ rtl8812au
 
   Ubuntu/Debian, Jetpack(nano,xavierNX)(*)
     cd rtl8812au
+    patch -p1 < ../rtl8812au_v5.6.4.2.patch
+    (patch -R -p1 < ../rtl8812au_v5.6.4.2.patch)
     sudo apt-get install dkms
     sudo make dkms_install
+    (dkms status;dkms remove ... --all)
+    sudo cp rtl8812au.conf /etc/modprobe.d
     sudo apt-get install ethtool
     ethtool -i wlx0013eff21898
 
