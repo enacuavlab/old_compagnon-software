@@ -13,11 +13,17 @@ if ls $DEVICE 1> /dev/null 2>&1; then
     if [ $st == "blocked" ];then `rfkill unblock $nb`;fi
     $HOME_PRJ/wfb_off.sh
 
+    if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then
+      systemctl stop wpa_supplicant.service;systemctl stop NetworkManager.service;fi
+
     ifconfig $wl down
-    iw dev $wl set monitor otherbss 
-    iw reg set DE 
+    iw dev $wl set monitor otherbss
+    iw reg set DE
     ifconfig $wl up
     iw dev $wl set channel 40
+
+    if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then
+      systemctl start NetworkManager.service;systemctl start wpa_supplicant.service;fi
 
     #iw dev $wl set txpower fixed 4000
     #iw $wl info

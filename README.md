@@ -20,7 +20,7 @@ Ubuntu/Debian :
 -------------------------------------------------------------------------------
 rtl8812au 
 
-  Ubuntu/Debian, Jetpack(xavierNX)(*)
+  Ubuntu/Debian, Jetpack(nano,xavierNX)(*)
     cd rtl8812au
     sudo apt-get install dkms
     sudo make dkms_install
@@ -40,7 +40,6 @@ rtl8812au
 (*)
 /etc/modprobe.d/blacklist.conf
 blacklist rtl8812au
-git clone -b v5.7.0 https://github.com/aircrack-ng/rtl8812au.git
 
 -------------------------------------------------------------------------------
 wifibroadcast

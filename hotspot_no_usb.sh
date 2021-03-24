@@ -21,6 +21,8 @@ if ls $DEVICE 1> /dev/null 2>&1;then
       while ! iwconfig $wl | grep -cs $ssid > /dev/null 2>&1;do sleep 1;done
       dhclient $wl
       echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+      sysctl net.ipv4.ip_forward=1 > /dev/null 2>&1;
+      iptables -t nat -A POSTROUTING -o $wl -j MASQUERADE > /dev/null 2>&1;
     fi
   fi
 fi
