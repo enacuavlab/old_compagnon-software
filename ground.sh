@@ -7,7 +7,7 @@
 HOME_WFB=/home/pprz/Projects/compagnon-software/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 
-#GCS_IP=192.168.174.194
+#GCS_IP=192.168.3.1
 GCS_IP=127.0.0.1
 
 if [ -n "$1" ]; then
