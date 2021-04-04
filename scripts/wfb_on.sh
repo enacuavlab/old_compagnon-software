@@ -11,7 +11,7 @@ if ls $DEVICE 1> /dev/null 2>&1; then
     nb=`rfkill --raw | grep $ph | awk '{print $1}'`
     st=`rfkill --raw | grep $ph | awk '{print $4}'`
     if [ $st == "blocked" ];then `rfkill unblock $nb`;fi
-    $HOME_PRJ/wfb_off.sh
+    $HOME_PRJ/scripts/wfb_off.sh
 
     if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then
       systemctl stop wpa_supplicant.service;systemctl stop NetworkManager.service;fi
@@ -28,8 +28,8 @@ if ls $DEVICE 1> /dev/null 2>&1; then
     #iw dev $wl set txpower fixed 4000
     #iw $wl info
 
-    #$HOME_PRJ/air.sh $wl
-    $HOME_PRJ/ground.sh $wl  
+    #$HOME_PRJ/scripts/air.sh $wl
+    $HOME_PRJ/scripts/ground.sh $wl  
 
   fi
 fi

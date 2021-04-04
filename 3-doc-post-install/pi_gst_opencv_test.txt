@@ -1,0 +1,114 @@
+TO BE UPDATE
+Improve latency and CPU usage by removing filter "VIDEOCONVERT" and using v4l2h264enc instead of omxh264enc
+
+
+                       | 5200 -> test (omxh264dec :x-raw,I420: omxh264enc) -> 5210 -> /test2
+ raspivid (x-h264) --> |
+                       | 5100 -> /test
+
+
+#!/bin/bash
+sudo killall raspivid gst-launch test-launch test ptest.py \
+rm /tmp/camera*;\
+raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o -  \
+ | gst-launch-1.0 fdsrc  \
+   ! h264parse  \
+   ! video/x-h264,stream-format=byte-stream  \
+   ! tee name=streams \
+   ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+   ! udpsink host=127.0.0.1 port=5100 streams. \
+   ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+   ! udpsink host=127.0.0.1 port=5200 &
+sleep 1
+#~/opencv_test/ptest.py &
+~/opencv_test/test &
+sleep 1
+gst-rtsp-server-1.14.4/examples/test-launch \
+"udpsrc port=5100 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" \
+"udpsrc port=5210 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" 
+
+-------------------------------------------------------------------------------
+gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
+gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test2 ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
+
+-------------------------------------------------------------------------------
+g++ -g ~/opencv_test/test.cpp -o ~/opencv_test/test `pkg-config --cflags --libs opencv4` 
+
+#include <opencv2/opencv.hpp>
+#define WIDTH 640
+#define HEIGHT 480
+#define FPS 30
+#define SCALE 3/2
+ 
+using namespace cv;
+using namespace std;
+int main(int, char**)
+{
+  Mat data;
+  string streamInGstStr="udpsrc port=5200 ! h264parse ! omxh264dec ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+  string streamOutGstStr="appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! udpsink host=127.0.0.1 port=5210";
+
+  VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
+  VideoWriter  streamOut(streamOutGstStr,0,FPS/1,Size(WIDTH,HEIGHT),true);
+
+  if (streamIn.isOpened() && streamOut.isOpened()) {
+    while (true) {
+      streamIn.read(data);
+      if (!data.empty()) {
+        streamOut.write(data);
+      }
+    }
+  }
+  return 0;
+}
+
+-------------------------------------------------------------------------------
+#!/usr/bin/python3
+import numpy as np
+import threading
+import cv2
+import time
+
+acquisition_cpt = 0
+processing_cpt = 0
+frame = None
+
+def data_acquisition(cap,out,condition):
+  global acquisition_cpt,frame
+  print("data_acquisition thread")
+  while True:
+    grabbed,frame = cap.read()
+    if grabbed:
+      with condition:
+        acquisition_cpt = acquisition_cpt + 1
+        #print("acquisition_cpt ",acquisition_cpt)
+        condition.notify()
+
+def data_processing(cap,out,condition):
+  global processing_cpt
+  print("data_processing thread")
+  while True:
+    with condition:
+      condition.wait()
+      img = frame.copy()
+    processing_cpt = processing_cpt + 1
+    #print("processing_cpt ",processing_cpt)
+    out.write(img)
+
+if __name__ == '__main__':
+  cap =  cv2.VideoCapture('udpsrc port=5200 ! h264parse ! omxh264dec ! videoconvert ! video/x-raw, format=(string)BGR ! appsink', cv2.CAP_GSTREAMER);
+  out =  cv2.VideoWriter('appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! udpsink host=127.0.0.1 port=5210',cv2.CAP_GSTREAMER,0, 30, (640,480), True)
+  time.sleep(0.1)
+  if not cap.isOpened() or not out.isOpened():
+    print("not opened")
+    quit()
+  threads = []
+  condition = threading.Condition()
+  for func in [data_acquisition, data_processing]:
+    threads.append(threading.Thread(target=func, args=(cap,out,condition)))
+    threads[-1].start() 
+  for thread in threads:
+    thread.join()
+  cap.release()
+
+

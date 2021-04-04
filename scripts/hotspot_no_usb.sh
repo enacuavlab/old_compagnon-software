@@ -5,6 +5,9 @@ PWD=pprzpprz
 if [ $# = 2 ];then ssid=$1;pwd=$2;
 else ssid=$SSID;pwd=$PWD;fi
 
+echo $ssid
+echo $pwd
+
 DEVICE=/sys/class/net/wl*
 if ls $DEVICE 1> /dev/null 2>&1;then
   lo=`ls -la $DEVICE | grep -v usb | awk '{print $9}'`

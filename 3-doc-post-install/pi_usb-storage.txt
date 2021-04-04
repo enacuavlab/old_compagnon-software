@@ -1,0 +1,22 @@
+Give access to storage via USB
+(with previously created fat32 partition /dev/mmcblk0p3 before)
+
+PI zero can be access with single USB (power + data)
+
+/boot/config.txt
+dtoverlay=dwc2
+
+/etc/modules
+dwc2
+reboot
+
+/etc/rc.local
+modprobe g_mass_storage file=/dev/mmcblk0p3 &
+
+
+# Monitor and kill if usb connection is detected
+tail -F /var/log/syslog | grep --line-buffered 'g_mass_storage gadget: high-speed config' | while read;do kill `ps -ef | grep gst-launch-1.0 | grep filesink | awk '{print $2}'`;done &
+
+# Do not launch if USB is connected
+dmesg | grep -q 'g_mass_storage gadget: high-speed config' | gst-launch-1.0 -e shmsrc socket-path=/tmp/camera1 do-timestamp=true ! h264parse ! matroskamux ! filesink location=/data/file0.mkv &
+

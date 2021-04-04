@@ -1,0 +1,33 @@
+sudo apt-get install gstreamer1.0-plugins-base -y
+sudo apt-get install gstreamer1.0-plugins-good -y
+sudo apt-get install gstreamer1.0-plugins-bad -y
+sudo apt-get install gstreamer1.0-plugins-ugly -y
+sudo apt-get install gstreamer1.0-libav -y
+sudo apt-get install gstreamer1.0-omx -y
+sudo apt-get install gstreamer1.0-tools -y
+
+------------------
+Do not install rpicamsrc but use raspivid !
+
+
+                       | --> camera1 (x-h264)
+ raspivid (x-h264) --> |
+                       | omxh264dec --> camera2 (x-raw,I420)
+
+
+raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o - | gst-launch-1.0 fdsrc ! h264parse ! video/x-h264,stream-format=byte-stream ! tee name=streams ! omxh264dec ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ! shmsink socket-path=/tmp/camera2 wait-for-connection=false sync=false streams. ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ! shmsink socket-path=/tmp/camera1 wait-for-connection=false sync=false
+
+gst-launch-1.0 shmsrc socket-path=/tmp/camera1 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.1.46 port=5000
+and
+gst-launch-1.0 shmsrc socket-path=/tmp/camera2 do-timestamp=true is-live=true ! video/x-raw,format=I420,width=640,height=480,framerate=15/1 ! omxh264enc ! video/x-h264,profile=high ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.1.46 port=5000
+
+client:
+gst-launch-1.0 udpsrc port=5000 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+-------------------------------------------------------------------------------
+Log to file:
+
+gst-launch-1.0 shmsrc socket-path=/tmp/camera1 do-timestamp=true \
+  ! h264parse config-interval=1 \
+  ! matroskamux \
+  ! filesink location=/data/file0.mkv

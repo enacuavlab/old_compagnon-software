@@ -1,0 +1,8 @@
+cd /opt/vc/src/hello_pi/libs/ilclient
+make
+
+git clone https://github.com/svpcom/wifibroadcast_osd
+cd wifibroadcast_osd/fpv_video
+make
+
+

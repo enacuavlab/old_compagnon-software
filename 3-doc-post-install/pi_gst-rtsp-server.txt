@@ -1,0 +1,37 @@
+gst-rtsp-server
+
+sudo apt-get install libglib2.0 -y;\
+sudo apt-get install libgstreamer1.0-dev -y;\
+sudo apt-get install libgstreamer-plugins-base1.0-dev -y
+
+gst-launch-1.0 --version
+=> gst-launch-1.0 version 1.14.4
+
+wget http://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-1.14.4.tar.xz
+tar -xf gst-rtsp-server-1.14.4.tar.xz
+rm gst-rtsp-server-1.14.4.tar.xz
+cd gst-rtsp-server-1.14.4/
+./configure
+
+~/gst-rtsp-server-1.14.4/examples/test-launch.c 
+patched with second stream 
+"
+ GstRTSPMediaFactory *factory2;
+ factory2 = gst_rtsp_media_factory_new ();
+ gst_rtsp_media_factory_set_launch (factory2, argv[2]);
+ gst_rtsp_mount_points_add_factory (mounts, "/test2", factory2);
+"
+cd ~/gst-rtsp-server-1.14.4
+make
+sudo make install
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o - | gst-launch-1.0 fdsrc ! h264parse ! video/x-h264,stream-format=byte-stream ! tee name=streams ! omxh264dec ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ! shmsink socket-path=/tmp/camera2 wait-for-connection=false sync=false streams. ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ! shmsink socket-path=/tmp/camera1 wait-for-connection=false sync=false
+
+gst-rtsp-server-1.14.4/examples/test-launch "shmsrc socket-path=/tmp/camera1 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" "shmsrc socket-path=/tmp/camera2 do-timestamp=true ! video/x-raw, format=I420, width=640, height=480, framerate=30/1 ! omxh264enc ! video/x-h264,profile=high  ! rtph264pay name=pay0 pt=96 config-interval=1"
+
+client:
+gst-launch-1.0 rtspsrc location=rtsp://192.168.1.96:8554/test ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
+and
+gst-launch-1.0 rtspsrc location=rtsp://192.168.1.96:8554/test2 ! rtph264depay ! avdec_h264 !  xvimagesink sync=false

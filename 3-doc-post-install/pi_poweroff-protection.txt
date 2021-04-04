@@ -1,0 +1,28 @@
+git clone https://github.com/marklister/overlayRoot.git
+cd overlayRoot 
+sudo bash install
+
+sudo dphys-swapfile swapoff;\
+sudo dphys-swapfile uninstall;\
+sudo update-rc.d dphys-swapfile remove
+
+To disable:
+/boot/cmdline.txt
+remove "init=/sbin/overlayRoot.sh"
+
+To writable:
+sudo mount -o remount,rw /ro
+sudo chroot /ro
+
+To add writable "/data"
+- create (gparted) FAT32 on SD
+- plug SD and boot
+- update /etc/fstab with suitable PARTUUID
+"
+proc            /proc           proc    defaults          0       0
+PARTUUID=738a4d67-01  /boot           vfat    defaults          0       2
+PARTUUID=738a4d67-02  /               ext4    defaults,noatime  0       1
+"
+add new partition with yours UUID
+PARTUUID=738a4d67-03  /data           vfat    nofail,umask=0000 0       0
+

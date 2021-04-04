@@ -20,22 +20,26 @@ Ubuntu/Debian :
 -------------------------------------------------------------------------------
 rtl8812au 
 
+  sudo cp rtl8812au.conf /etc/modprobe.d
+  (cat /sys/module/88XXau/parameters/rtw_monitor_disable_1m 1) 
+
+  patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
+  (patch -R -p1 < ../material/rtl8812au_v5.6.4.2.patch)
+
   Ubuntu/Debian, Jetpack(nano,xavierNX)(*)
     cd rtl8812au
-    patch -p1 < ../rtl8812au_v5.6.4.2.patch
-    (patch -R -p1 < ../rtl8812au_v5.6.4.2.patch)
     sudo apt-get install dkms
     sudo make dkms_install
     (dkms status;dkms remove ... --all)
-    sudo cp ../rtl8812au.conf /etc/modprobe.d
+    sudo cp ../material/rtl8812au.conf /etc/modprobe.d
     sudo apt-get install ethtool
     ethtool -i wlx0013eff21898
 
   Raspbian
-    RPI 1/2/3/ & 0/Zero
+    RPI 0 & 3 (with OS 32)
       sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile
       sed -i 's/CONFIG_PLATFORM_ARM_RPI = n/CONFIG_PLATFORM_ARM_RPI = y/g' Makefile
-    RPI 3B+ & 4B
+    RPI 3B+ & 4B (with OS 64b)
       sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile
       sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' Makefile
     make 
@@ -56,10 +60,16 @@ wifibroadcast
   wifibroadcast repositories must have the same gs.key and drone.key
 
 -------------------------------------------------------------------------------
-Update HOME in air.sh,ground.sh,wfb_on.sh
+Update HOME in air.sh,ground.sh,wfb_on.sh,wifibroadcast.service
 Update "air.sh or ground.sh" in wfb_on.sh
-Update ExecStart,ExecStop in wifibroadcast.service
-Update "air_campi.sh or air_camjet.sh" in air.sh
+
+-------------------------------------------------------------------------------
+Raspberry PI
+
+/etc/dhcpcd.conf
+
+#denyinterfaces wlan0
+denyinterfaces wlan1
 
 -------------------------------------------------------------------------------
 sudo cp wifibroadcast.service /etc/systemd/system

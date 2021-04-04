@@ -1,0 +1,105 @@
+socat -u /dev/ttyAMA0,raw,echo=0,b115200 - | tee >(socat - udp-sendto:127.0.0.1:4245) >(socat - udp-sendto:127.0.0.1:4242) > /dev/null 2>&1 &
+socat -u udp-listen:4243,reuseaddr,fork /dev/ttyAMA0,raw,echo=0,b115200 &
+export LD_LIBRARY_PATH=/home/pi/muxer/lib
+/home/pi/muxer/exe/muxer 4244 4245 > /dev/null 2>&1 &
+
+------------------------------------------------------------------------------
+#define IMUPIPE "/tmp/fromimu"
+float msgpipe_g[3];
+int imufd;
+...
+      mkfifo(IMUPIPE, 0666); 
+     imufd = open(IMUPIPE, O_RDWR | O_NONBLOCK);
+...
+            if (msgid == PPRZ_MSG_ID_ROTORCRAFT_FP) {
+      	      memcpy(&(rfp_g.stamp),&tv,sizeof(struct timeval));
+              rfp_g.phi  =ALT_UNIT_COEF_ATT*pprzlink_get_ROTORCRAFT_FP_phi(buf);
+              rfp_g.theta=ALT_UNIT_COEF_ATT*pprzlink_get_ROTORCRAFT_FP_theta(buf);
+              rfp_g.psi  =ALT_UNIT_COEF_ATT*pprzlink_get_ROTORCRAFT_FP_psi(buf);
+  	       acid = buf[0];
+              printf("%.4f %d ROTORCRAFT_FP %f %f %f\n",elapsed,acid,rfp_g.phi,rfp_g.theta,rfp_g.psi);  
+
+              msgpipe_g[0]=rfp_g.phi; msgpipe_g[1]=rfp_g.theta; msgpipe_g[2] = rfp_g.psi;
+              write(imufd, &msgpipe_g, sizeof(msgpipe_g));
+
+-------------------------------------------------------------------------------
+cv.cpp
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+
+#define IMUPIPE "/tmp/fromimu"
+float msgpipe_g[3];
+int imufd;
+Point pcenter(320,240);
+float torad = CV_PI / 180.0;
+
+/*****************************************************************************/
+static void * drawAxes_threadImuProg(void *arg) {
+  float msgpipe_l[3];
+  int msgsize = sizeof(msgpipe_g);
+  while(true) {
+    if (msgsize==read(imufd,&msgpipe_l,msgsize)) {
+      memcpy(&msgpipe_g, &msgpipe_l, msgsize); 
+    } 
+  }
+}
+
+static void drawAxes_init()
+{
+  mkfifo(IMUPIPE, 0666); 
+  imufd = open(IMUPIPE, O_RDWR);
+
+  pthread_t threadImu;
+  pthread_create(&threadImu, NULL, &drawAxes_threadImuProg, NULL);
+}
+
+struct quaternion_t
+{
+  float w, x, y, z;
+};
+
+static void drawAxes(Mat3b *img) 
+{
+  float msgpipe_l[3];
+  memcpy(&msgpipe_l, &msgpipe_g, sizeof(msgpipe_g)); 
+
+  float roll  =  torad*msgpipe_l[0];   // roll_phy(x)
+  float pitch = -torad*msgpipe_l[1]; // pitch_theta(y)
+  float yaw   = -torad*msgpipe_l[2];   // yaw_psi(z)
+
+  float cy = cos(roll * 0.5);
+  float sy = sin(roll * 0.5);
+  float cp = cos(yaw * 0.5);
+  float sp = sin(yaw * 0.5);
+  float cr = cos(pitch * 0.5);
+  float sr = sin(pitch * 0.5);
+
+  quaternion_t q;          // quaternion from euler
+  q.w = cr * cp * cy + sr * sp * sy;
+  q.x = sr * cp * cy - cr * sp * sy;
+  q.y = cr * sp * cy + sr * cp * sy;
+  q.z = cr * cp * sy - sr * sp * cy;
+
+  array<Point3i,4> pts = {Point3i{0,0,0},Point3i{100,0,0},Point3i{0,100,0},Point3i{0,0,100}};
+  array<Point3f,4> out;
+  for (int i=0;i<4;i++) {  // rotation matrix from quaternion
+    out[i].x=(1-2*q.y*q.y-2*q.z*q.z)*pts[i].x+(2*q.x*q.y-2*q.z*q.w)*pts[i].y+(2*q.x*q.z+2*q.y*q.w)*pts[i].z;
+    out[i].y=(2*q.x*q.y+2*q.z*q.w)*pts[i].x+(1-2*q.x*q.x-2*q.z*q.z)*pts[i].y+(2*q.y*q.z-2*q.x*q.w)*pts[i].z;
+    out[i].z=(2*q.x*q.z-2*q.y*q.w)*pts[i].x+(2*q.y*q.z+2*q.x*q.w)*pts[i].y+(1-2*q.x*q.x-2*q.y*q.y)*pts[i].z;
+  } 
+
+  Point loc=pcenter;
+  array<Point,4> imgPts;   // 3D to 2D projection
+  for (int i=0;i<4;i++)
+    imgPts[i]={(int)(loc.x-out[i].x+0.5*out[i].z),(int)(loc.y-out[i].y-0.5*out[i].z)}; 
+
+  line(*img, imgPts[0], imgPts[3], Scalar(0,0,255), 3); // red
+  line(*img, imgPts[0], imgPts[1], Scalar(0,255,0), 3); // green
+  line(*img, imgPts[0], imgPts[2], Scalar(255,0,0), 3); // blue
+  circle(*img, pcenter, 5, Scalar(0,0,0), -1);
+}
+

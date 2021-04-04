@@ -1,0 +1,13 @@
+rm /tmp/camera*;
+/home/pi/RaspiCV/build/raspicv -t 0 -w 640 -h 480 -fps 30/1 -b 500000 -cd H264 -n -a ENAC -ae 22 -x /dev/null -r /dev/null -rf gray -o - \
+  | gst-launch-1.0 fdsrc \
+    ! h264parse \
+    ! video/x-h264,stream-format=byte-stream \
+    ! udpsink host=127.0.0.1 port=5100
+gst-rtsp-server-1.14.4/examples/test-launch  \
+  "udpsrc port=5100 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" \
+  "shmsrc socket-path=/tmp/camera3 do-timestamp=true ! video/x-raw, format=I420, width=640, height=480, framerate=30/1 ! omxh264enc ! video/x-h264,profile=high ! rtph264pay name=pay0 pt=96 config-interval=1"
+
+client
+gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test ! rtph264depay ! avdec_h264 ! xvimagesink sync=false
+gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test2 ! rtph264depay ! avdec_h264 ! xvimagesink sync=false

@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+import re
+import numpy as np
+import pandas as pd 
+from scipy.interpolate import griddata, interp1d
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib as mpl
+
+class msgparse():
+  def __init__(self, msg_name, columns, drop_columns, nbpat, pat):
+    self.msg_name     = msg_name
+    self.columns      = columns
+    self.drop_columns = drop_columns
+    self.nbpat        = nbpat
+    self.pat          = pat
+    self.list_meas    = []
+   
+msg = []
+msg.append(msgparse('attitude',['time', 'phi','psi','theta'],['time'],4,'ATTITUDE (\S+) (\S+) (\S+)'))
+msg.append(msgparse('actuators',['time', 'S0','S1','S2'],['time'],4,'ACTUATORS (\S+),(\S+),(\S+)'))
+msg.append(msgparse('commands',['time', 'C0','C1','C2'],['time'],4,'COMMANDS (\S+),(\S+),(\S+)'))
+msg.append(msgparse('imuaccel',['time','Ax','Ay','Az'],['time'],4,'IMU_ACCEL (\S+) (\S+) (\S+)'))
+msg.append(msgparse('imugyro',['time','Gx','Gy','Gz'],['time'],4,'IMU_GYRO (\S+) (\S+) (\S+)'))
+msg.append(msgparse('mode',['time','mode','1','2','3','4','5'],['time','1','2','3','4','5'],7,'PPRZ_MODE (\S+) (\S+) (\S+) (\S+) (\S+) (\S+)'))
+msg.append(msgparse('settings',['time','m1','m2','add1','add2'],['time'],5,'SETTINGS (\S+) (\S+) (\S+) (\S+)'))
+
+
+def read_log(ac_id, filename):
+  pattern = []
+  for i in range(0,len(msg)):
+    pattern.append(re.compile("(\S+) "+ac_id+" "+msg[i].pat))  
+  f = open(filename, 'r')
+
+  while True:
+    line = f.readline().strip()
+    if line == :
+      break
+    for i in range(0,len(msg)):
+      m = re.match(pattern[i], line)
+      if m:
+        tmp = []
+        for j in range(1,msg[i].nbpat+1):
+          tmp.append(float(m.group(j)))
+        msg[i].list_meas.append(tmp)
+
+def linearize_time(pad, sample_period,df, min_t=None, max_t=None):
+  if (min_t or max_t) == None:
+    min_t = min(df.index)
+    max_t = max(df.index)
+  time = np.arange(int(min_t)+pad, int(max_t)-pad, sample_period)
+  out = pd.DataFrame()
+  out['time'] = time
+  for col in df.columns:
+    func = interp1d(df.index , df[col])
+    out[col] = func(time)
+  out.index = out.time
+  out.drop(['time'], axis=1, inplace=True)
+  return out
+
+if __name__ == "__main__":
+  ac_id = '214'
+  filename = '/data/logfile.txt'
+  read_log(ac_id,filename) 
+
+  df_list = []
+  for i in range(0,len(msg)):
+    exec('data_values = np.array(msg[i].list_meas)'.format(msg[i].msg_name))
+    df = pd.DataFrame(data_values, columns=msg[i].columns)
+    df.index = df.time
+    df.drop(msg[i].drop_columns, axis=1, inplace=True)
+    df_list.append(df) 
+
+  min_t = 1000.;max_t = -1.
+  for df in df_list:
+    min_t = min(min_t, min(df.index))
+    max_t = max(max_t, max(df.index)) 
+
+  pad=10;sample_period=0.01
+  frames = [linearize_time(pad,sample_period,df_list[i], min_t, max_t) for i in range(0,4)]
+  df_All=pd.concat(frames, axis=1, ignore_index=False, sort=False) 
+
+  sns.set()
+  df_All.plot(subplots=True, figsize=(12,10));plt.show()
+  #df_list[6].plot(subplots=True, figsize=(12,10));plt.show()
