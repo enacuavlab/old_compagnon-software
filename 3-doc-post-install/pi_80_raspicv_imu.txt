@@ -1,9 +1,11 @@
-socat -u /dev/ttyAMA0,raw,echo=0,b115200 - | tee >(socat - udp-sendto:127.0.0.1:4245) >(socat - udp-sendto:127.0.0.1:4242) > /dev/null 2>&1 &
-socat -u udp-listen:4243,reuseaddr,fork /dev/ttyAMA0,raw,echo=0,b115200 &
-export LD_LIBRARY_PATH=/home/pi/muxer/lib
-/home/pi/muxer/exe/muxer 4244 4245 > /dev/null 2>&1 &
+------------------------------------------------------------------------------
+cd /home/pi/Projects/RaspiCV/src
+mv cv.cpp cv.imu
+add cv.cpp code below (*) 
+make
 
 ------------------------------------------------------------------------------
+check update in file compagnon_software/onboard_bridge/src/onboard_bridge.c
 #define IMUPIPE "/tmp/fromimu"
 float msgpipe_g[3];
 int imufd;
@@ -23,19 +25,25 @@ int imufd;
               write(imufd, &msgpipe_g, sizeof(msgpipe_g));
 
 -------------------------------------------------------------------------------
-cv.cpp
+cv.cpp (*)
+....
+#include <pthread.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
-
+....
 #define IMUPIPE "/tmp/fromimu"
 float msgpipe_g[3];
 int imufd;
 Point pcenter(320,240);
 float torad = CV_PI / 180.0;
+
+struct motion_elt_t {
+...
+static bool init_ready=false;
 
 /*****************************************************************************/
 static void * drawAxes_threadImuProg(void *arg) {
@@ -102,4 +110,16 @@ static void drawAxes(Mat3b *img)
   line(*img, imgPts[0], imgPts[2], Scalar(255,0,0), 3); // blue
   circle(*img, pcenter, 5, Scalar(0,0,0), -1);
 }
+
+/*****************************************************************************/
+static void *process_thread(void *ptr)
+...
+    arrowedLine(grayBGR, Point(320,240),Point(320+sum_x,240+sum_y),Scalar(0,255,0),5);
+
+    drawAxes(&grayBGR);
+...
+void cv_init(int w, int h, int f, int fmt)
+{
+  drawAxes_init();
+...
 

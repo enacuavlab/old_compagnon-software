@@ -1,9 +1,12 @@
+cd Projects
+
 git clone https://github.com/raspberrypi/userland.git
 git clone https://github.com/adamheinrich/RaspiCV.git
 
 RaspiCV/src/Makefile
+
 < USERLAND_DIR
-> USERLAND_DIR = $(HOME)/userland
+> USERLAND_DIR = $(HOME)/Projects/userland
 ...
 >      $(USERLAND_DIR)/host_applications/linux/apps/raspicam/RaspiHelpers.c \
 >      $(USERLAND_DIR)/host_applications/linux/apps/raspicam/RaspiCommonSettings.c \
@@ -19,7 +22,7 @@ RaspiCV/src/Makefile
 < LDLIBFLAGS = -Wl, ...
 > LDLIBFLAGS = -ldl -Wl, ...
 
-cp ~/userland/host_applications/linux/apps/raspicam/RaspiVid.c ~/RaspiCV/src/RaspiCV.c
+cp userland/host_applications/linux/apps/raspicam/RaspiVid.c RaspiCV/src/RaspiCV.c
 
 < #include <semaphore.h>
 > #include "cv.h"
@@ -48,11 +51,13 @@ cp ~/userland/host_applications/linux/apps/raspicam/RaspiVid.c ~/RaspiCV/src/Ras
 >    cv_close();
 
 -------------------------------------------------------------------------------
+replace RaspiCV/src/cv.cpp with the code below (*)
+mkdir -p RaspiCV/build
 cd RaspiCV/src
 make
 
 -------------------------------------------------------------------------------
-RaspiCV/src/cv.cpp
+(*) RaspiCV/src/cv.cpp
 
 #include "cv.h"
 #include <opencv2/opencv.hpp>
@@ -143,8 +148,6 @@ static void *process_thread(void *ptr)
     sum_y = (sum_y/mbxy);
     arrowedLine(grayBGR, Point(320,240),Point(320+sum_x,240+sum_y),Scalar(0,255,0),5); 
 
-    drawAxes(&grayBGR);
-
     strOut.write(grayBGR);
   }
   return((void *)0);
@@ -157,8 +160,6 @@ void cv_init(int w, int h, int f, int fmt)
 //  cerr << length << endl;
 //    fd << static_cast<int32_t>(sum_x) << endl;
 
-  drawAxes_init(); 
- 
   width=w;height=h;fps=f;
 
   gray = Mat(height, width, CV_8UC1);

@@ -10,14 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "muxlib.h"
+#include "libbridge.h"
 
 #define BUFFSIZE 512
 
 /*
-
-cc -g -fPIC -shared muxer/src/muxlib.c -o muxer/lib/libmux.so -I/home/pi/muxer/inc -I/home/pi/pprzlink/build
-
+cc -g -fPIC -shared src/libbridge.c -o lib/libbridge.so -I./inc -I/home/pi/Projects/compagnon-software/pprzlink/build
 */
 
 typedef struct {

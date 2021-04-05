@@ -1,7 +1,8 @@
 /*
-cc -g muxer/src/muxer.c -o muxer/exe/muxer -I/home/pi/pprzlink/build -I/home/pi/muxer/inc -L/home/pi/muxer/lib -lmux
-export LD_LIBRARY_PATH=/home/pi/muxer/lib
-./muxer/exe/muxer 4244 4245 4246
+cc -g src/onboard_bridge.c -o exe/onboard_bridge -I./inc -I/home/pi/Projects/compagnon-software/pprzlink/build -L/home/pi/Projects/compagnon-software/onboard_bridge/lib -lbridge
+
+export LD_LIBRARY_PATH=/home/pi/Projects/onboard_bridge/lib
+./exe/onboard_bridge 4244 4245 4246
 socat -u /dev/ttyAMA0,raw,echo=0,b115200 udp-sendto:127.0.0.1:4246
 */
 
@@ -15,7 +16,7 @@ socat -u /dev/ttyAMA0,raw,echo=0,b115200 udp-sendto:127.0.0.1:4246
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "muxlib.h"
+#include "libbridge.h"
 
 // from messages.xml
 #define ALT_UNIT_COEF_ATT 0.0139882

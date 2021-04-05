@@ -1,0 +1,33 @@
+#!/bin/bash
+sudo killall raspicv gst-launch-1.0 test-launch socat
+rm /tmp/fromimu
+rm /tmp/camera*
+BITRATE_VIDEO1=1000000
+BITRATE_VIDEO2=2000000
+/home/pi/Projects/RaspiCV/build/raspicv -t 0 -w 640 -h 480 -fps 30/1 -b $BITRATE_VIDEO1 -vf -hf -cd H264 -n -a ENAC -ae 22 -x /dev/null -r /dev/null -rf gray -o - \
+   | gst-launch-1.0 fdsrc \
+    ! h264parse \
+    ! video/x-h264,stream-format=byte-stream,alignment=au \
+    ! rtph264pay name=pay0 pt=96 config-interval=1 \
+    ! udpsink host=192.168.3.1 port=5700 &
+sleep 5
+gst-launch-1.0 shmsrc socket-path=/tmp/camera3 do-timestamp=true \
+  ! video/x-raw, format=BGR, width=640, height=480, framerate=30/1, colorimetry=1:1:5:1  \
+  ! v4l2h264enc extra-controls="controls,video_bitrate=$BITRATE_VIDEO2" \
+  ! rtph264pay name=pay0 pt=96 config-interval=1 \
+  ! udpsink host=192.168.3.1 port=5600 &
+socat -u /dev/ttyAMA0,raw,echo=0,b115200 - | tee >(socat - udp-sendto:127.0.0.1:4245) >(socat - udp-sendto:127.0.0.1:4242) > /dev/null 2>&1 &
+socat -u udp-listen:4243,reuseaddr,fork /dev/ttyAMA0,raw,echo=0,b115200 &
+
+export LD_LIBRARY_PATH=/home/pi/Projects/compagnon-software/onboard_bridge/lib
+/home/pi/Projects/compagnon-software/onboard_bridge/exe/onboard_bridge 4244 4245 &
+#export PYTHONPATH=/home/pi/pprzlink/lib/v2.0/python:$PYTHONPATH
+#python3 ./onboard_bridge/src/onboard_bridge.py 4244 4245 &
+
+
+-------------------------------------------------------------------------------
+client:
+
+gst-launch-1.0 udpsrc port=5600 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+

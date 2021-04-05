@@ -11,7 +11,7 @@ import dataclasses
 
 from ctypes import *
 
-muxlib = CDLL("/home/pi/muxer/lib/libmux.so")
+muxlib = CDLL("/home/pi/Projects/compagnon-software/onboard_bridge/lib/libbridge.so")
 
 muxlib.muxlib_init.argtypes = [c_int,POINTER(c_char)]
 muxlib.muxlib_check_and_parse.restype = c_int

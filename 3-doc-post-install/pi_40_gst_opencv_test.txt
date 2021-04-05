@@ -6,10 +6,16 @@ Improve latency and CPU usage by removing filter "VIDEOCONVERT" and using v4l2h2
  raspivid (x-h264) --> |
                        | 5100 -> /test
 
+-------------------------------------------------------------------------------
+mkdir -p Projects/opencv_test
+cd Projects/opencv_test
+
+-------------------------------------------------------------------------------
+test.sh
 
 #!/bin/bash
-sudo killall raspivid gst-launch test-launch test ptest.py \
-rm /tmp/camera*;\
+sudo killall raspivid gst-launch test-launch test test.py 
+rm /tmp/camera*
 raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o -  \
  | gst-launch-1.0 fdsrc  \
    ! h264parse  \
@@ -20,20 +26,25 @@ raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -i
    ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
    ! udpsink host=127.0.0.1 port=5200 &
 sleep 1
-#~/opencv_test/ptest.py &
-~/opencv_test/test &
+#/home/pi/Projects/opencv_test/test.py &
+/home/pi/Projects/opencv_test/test &
 sleep 1
-gst-rtsp-server-1.14.4/examples/test-launch \
+/home/pi/Projects/gst-rtsp-server-1.14.4/examples/test-launch \
 "udpsrc port=5100 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" \
 "udpsrc port=5210 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" 
 
 -------------------------------------------------------------------------------
-gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
-gst-launch-1.0 rtspsrc location=rtsp://RASPBERRYPI_IP:8554/test2 ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
+Update raspberrypi IP
+
+gst-launch-1.0 rtspsrc location=rtsp://192.168.3.2:8554/test ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
+gst-launch-1.0 rtspsrc location=rtsp://192.168.3.2:8554/test2 ! rtph264depay ! avdec_h264 !  xvimagesink sync=false
 
 -------------------------------------------------------------------------------
-g++ -g ~/opencv_test/test.cpp -o ~/opencv_test/test `pkg-config --cflags --libs opencv4` 
+test.cpp
 
+/*
+g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` 
+*/
 #include <opencv2/opencv.hpp>
 #define WIDTH 640
 #define HEIGHT 480
@@ -63,6 +74,9 @@ int main(int, char**)
 }
 
 -------------------------------------------------------------------------------
+NOT WORKING ?
+test.py
+
 #!/usr/bin/python3
 import numpy as np
 import threading

@@ -8,7 +8,8 @@ Flash the RaspberryPi OS on a 16Gb minimum size SD
 ./balenaEtcher-1.5.79-x64.AppImage
 
 Re-Plug SD
-cd /mnt/.../boot
+(automount)
+cd /media/.../boot
 sudo touch ssh
 
 sudo vi wpa_supplicant.conf
@@ -26,7 +27,7 @@ network={
 }
 "
 
-sudo vi /etc/dhcpcd.conf
+sudo vi /media/../rootfs/etc/dhcpcd.conf
 "
 # It is possible to fall back to a static IP if DHCP fails:
 # define static profile
@@ -41,7 +42,7 @@ fallback static_eth0
 
 Plug the SD on the PI, and power on
 
-nmap -sn 192.168.1.0/24
+(nmap -sn 192.168.1.0/24)
 
 ssh pi@...
 password: raspberry
@@ -77,9 +78,13 @@ sudo systemctl stop hciuart
 sudo systemctl disable hciuart
 
 -------------------------------------------------------------------------
--------------------------------------------------------------------------
 Share wireless internet with ethernet
 
 Ubuntu
 sudo sysctl net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
+
+-------------------------------------------------------------------------
+sudo apt-get update
+sudo apt-get upgrade
+
