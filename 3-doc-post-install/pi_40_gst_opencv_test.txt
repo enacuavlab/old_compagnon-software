@@ -1,6 +1,3 @@
-TO BE UPDATE
-Improve latency and CPU usage by removing filter "VIDEOCONVERT" and using v4l2h264enc instead of omxh264enc
-
 
                        | 5200 -> test (omxh264dec :x-raw,I420: omxh264enc) -> 5210 -> /test2
  raspivid (x-h264) --> |
@@ -31,7 +28,7 @@ sleep 1
 sleep 1
 /home/pi/Projects/gst-rtsp-server-1.14.4/examples/test-launch \
 "udpsrc port=5100 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" \
-"udpsrc port=5210 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1" 
+"udpsrc port=5210 do-timestamp=true ! video/x-h264,stream-format=byte-stream,alignment=au ! rtph264pay name=pay0 pt=96 config-interval=1"  &
 
 -------------------------------------------------------------------------------
 Update raspberrypi IP
@@ -56,7 +53,7 @@ using namespace std;
 int main(int, char**)
 {
   Mat data;
-  string streamInGstStr="udpsrc port=5200 ! h264parse ! omxh264dec ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+  string streamInGstStr="udpsrc port=5200 ! h264parse ! v4l2h264dec capture-io-mode=4 ! v4l2convert output-io-mode=5 ! appsink";
   string streamOutGstStr="appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! udpsink host=127.0.0.1 port=5210";
 
   VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
@@ -74,7 +71,6 @@ int main(int, char**)
 }
 
 -------------------------------------------------------------------------------
-NOT WORKING ?
 test.py
 
 #!/usr/bin/python3
@@ -110,7 +106,7 @@ def data_processing(cap,out,condition):
     out.write(img)
 
 if __name__ == '__main__':
-  cap =  cv2.VideoCapture('udpsrc port=5200 ! h264parse ! omxh264dec ! videoconvert ! video/x-raw, format=(string)BGR ! appsink', cv2.CAP_GSTREAMER);
+  cap =  cv2.VideoCapture('udpsrc port=5200 ! h264parse ! v4l2h264dec capture-io-mode=4 ! v4l2convert output-io-mode=5 ! appsink', cv2.CAP_GSTREAMER);
   out =  cv2.VideoWriter('appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! udpsink host=127.0.0.1 port=5210',cv2.CAP_GSTREAMER,0, 30, (640,480), True)
   time.sleep(0.1)
   if not cap.isOpened() or not out.isOpened():
@@ -124,5 +120,3 @@ if __name__ == '__main__':
   for thread in threads:
     thread.join()
   cap.release()
-
-
