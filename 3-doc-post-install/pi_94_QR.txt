@@ -1,16 +1,120 @@
+sudo apt-get install libsdl-dev
+sudo apt-get install libsdl-gfx1.2-dev
 
 git clone https://github.com/dlbeer/quirc.git
+cd quirc
+make
+sudo make install
 
 -------------------------------------------------------------------------------
+test.sh
+(update PC IP)
+
+#!/bin/bash
+sudo killall raspivid gst-launch-1.0 test-launch test
+raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o -  \
+  | gst-launch-1.0 fdsrc  \
+  ! h264parse  \
+  ! rtph264pay pt=96 config-interval=1 \
+  ! tee name=streams \
+  ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+  ! udpsink host=192.168.3.1 port=5100 streams. \
+  ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+  ! udpsink host=127.0.0.1 port=5200 &
+sleep 1
+#/home/pi/Projects/opencv_test/test.py &
+/home/pi/Projects/opencv_test/test &
+
+-------------------------------------------------------------------------------
+Client
+
+gst-launch-1.0 udpsrc port=5100 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 udpsrc port=5500 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+-------------------------------------------------------------------------------
+test.cpp
+
+/*
+g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` -lquirc
+*/
+#include <opencv2/opencv.hpp>
+#include <quirc.h>
+
+#define WIDTH 640
+#define HEIGHT 480
+#define FPS 30
+#define SCALE 3/2
+
+using namespace cv;
+using namespace std;
+
+typedef struct
+{
+  int type;
+  std::string data;
+  std::vector <cv::Point> location;
+} decodedObject;
+
+void decode(cv::Mat &img)
+{
+  struct quirc *qr;
+  cv::Mat imGray;
+  cv::cvtColor(img, imGray,cv::COLOR_BGR2GRAY);
+
+  uint8_t *image;
+  int w = img.size().width;
+  int h= img.size().height;
+
+  qr = quirc_new();
+  image = quirc_begin(qr, &w, &h);
+  memcpy(image,imGray.data,h*w);
+  quirc_end(qr);
+
+  int num_codes = quirc_count(qr);
+  for (int i = 0; i < num_codes; i++)
+  {
+    struct quirc_code code;
+    struct quirc_data data;
+    quirc_decode_error_t err;
+    quirc_extract(qr, i, &code);
+    err = quirc_decode(&code, &data);
+    if (!err)
+    {
+      decodedObject obj;
+      obj.type=data.data_type;
+      for (int charNum=0; charNum < data.payload_len; ++charNum)
+        if (data.payload[charNum]<=127) obj.data+=(char)data.payload[charNum];
+      for (int j=0;j<4;++j)
+        obj.location.push_back(cv::Point(code.corners[j].x,code.corners[j].y));
+      //decodedObjects.push_back(obj);
+    }
+  }
+  quirc_destroy(qr);
+}
+
+int main(int, char**)
+{
+{
+  Mat data;
+  string streamInGstStr="udpsrc port=5200 ! application/x-rtp,ncoding-name=H264,payload=96 ! rtph264depay ! h264parse ! v4l2h264dec capture-io-mode=4 ! v4l2convert output-io-mode=5 ! appsink";
+  string streamOutGstStr="appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! rtph264pay pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5500";
+
+  VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
+  VideoWriter  streamOut(streamOutGstStr,0,FPS/1,Size(WIDTH,HEIGHT),true);
+
+  if (streamIn.isOpened() && streamOut.isOpened()) {
+    while (true) {
+      streamIn.read(data);
+      if (!data.empty()) {
+        streamOut.write(data);
+      }
+    }
+  }
+  return 0;
+}
 
 
-
-
-
-
-sudo pip3 install quirc
-
-
+-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 sudo apt-get install libzbar0
 sudo apt-get install libzbar-dev python-zbar zbar-tools
