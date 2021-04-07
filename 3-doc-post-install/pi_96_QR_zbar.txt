@@ -1,10 +1,8 @@
-sudo apt-get install libsdl-dev
-sudo apt-get install libsdl-gfx1.2-dev
+sudo apt-get install libzbar0
+sudo apt-get install libzbar-dev python-zbar zbar-tools
 
-git clone https://github.com/dlbeer/quirc.git
-cd quirc
-make
-sudo make install
+sudo apt-get install python3-pip
+sudo pip3  install pyzbar
 
 -------------------------------------------------------------------------------
 test.sh
@@ -20,7 +18,7 @@ raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -i
   ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
   ! udpsink host=192.168.3.1 port=5100 streams. \
   ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
-  ! udpsink host=127.0.0.1 port=5200 &
+  ! udpsink host=127.0.0.1 port=5200  &
 sleep 1
 #/home/pi/Projects/opencv_test/test.py &
 /home/pi/Projects/opencv_test/test &
@@ -35,10 +33,10 @@ gst-launch-1.0 udpsrc port=5500 ! application/x-rtp, encoding-name=H264,payload=
 test.cpp
 
 /*
-g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` -lquirc
+g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` -lzbar
 */
 #include <opencv2/opencv.hpp>
-#include <quirc.h>
+#include <zbar.h>
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -47,54 +45,18 @@ g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` -lquirc
 
 using namespace cv;
 using namespace std;
+using namespace zbar;
 
 typedef struct
 {
-  int type;
-  std::string data;
-  std::vector <cv::Point> location;
+  string type;
+  string data;
+  vector <Point> location;
 } decodedObject;
-
-void decode(cv::Mat &img)
-{
-  struct quirc *qr;
-  cv::Mat imGray;
-  cv::cvtColor(img, imGray,cv::COLOR_BGR2GRAY);
-
-  uint8_t *image;
-  int w = img.size().width;
-  int h= img.size().height;
-
-  qr = quirc_new();
-  image = quirc_begin(qr, &w, &h);
-  memcpy(image,imGray.data,h*w);
-  quirc_end(qr);
-
-  int num_codes = quirc_count(qr);
-  for (int i = 0; i < num_codes; i++)
-  {
-    struct quirc_code code;
-    struct quirc_data data;
-    quirc_decode_error_t err;
-    quirc_extract(qr, i, &code);
-    err = quirc_decode(&code, &data);
-    if (!err)
-    {
-      decodedObject obj;
-      obj.type=data.data_type;
-      for (int charNum=0; charNum < data.payload_len; ++charNum)
-        if (data.payload[charNum]<=127) obj.data+=(char)data.payload[charNum];
-      for (int j=0;j<4;++j)
-        obj.location.push_back(cv::Point(code.corners[j].x,code.corners[j].y));
-      //decodedObjects.push_back(obj);
-    }
-  }
-  quirc_destroy(qr);
-}
 
 int main(int, char**)
 {
-{
+  int cpt=0;
   Mat data;
   string streamInGstStr="udpsrc port=5200 ! application/x-rtp,ncoding-name=H264,payload=96 ! rtph264depay ! h264parse ! v4l2h264dec capture-io-mode=4 ! v4l2convert output-io-mode=5 ! appsink";
   string streamOutGstStr="appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! rtph264pay pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5500";
@@ -102,10 +64,39 @@ int main(int, char**)
   VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
   VideoWriter  streamOut(streamOutGstStr,0,FPS/1,Size(WIDTH,HEIGHT),true);
 
+  vector<decodedObject> decodedObjects;
+  ImageScanner scanner;
+  scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
+  Mat imGray;
   if (streamIn.isOpened() && streamOut.isOpened()) {
     while (true) {
       streamIn.read(data);
       if (!data.empty()) {
+        cvtColor(data, imGray,COLOR_BGR2GRAY);
+        Image image(data.cols, data.rows, "Y800", (uchar *)imGray.data, data.cols * data.rows);
+        int n = scanner.scan(image);
+        for(Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
+        {
+          decodedObject obj;
+          obj.type = symbol->get_type_name();
+          obj.data = symbol->get_data();
+          cout << "Type : " << obj.type << endl;
+          cout << "Data : " << obj.data << endl << endl;
+          for(int i = 0; i< symbol->get_location_size(); i++) 
+            obj.location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+          decodedObjects.push_back(obj);
+        }
+        for(int i = 0; i < decodedObjects.size(); i++)
+        {
+          vector<Point> points = decodedObjects[i].location;
+          vector<Point> hull;
+          if(points.size() > 4) convexHull(points, hull);
+          else hull = points;
+          int n = hull.size();
+          for(int j = 0; j < n; j++) line(data, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
+        }
+       	printf("%d\n",cpt++);
         streamOut.write(data);
       }
     }

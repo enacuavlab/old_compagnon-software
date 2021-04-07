@@ -1,0 +1,126 @@
+sudo apt-get install libsdl-dev
+sudo apt-get install libsdl-gfx1.2-dev
+
+git clone https://github.com/dlbeer/quirc.git
+cd quirc
+make
+sudo make install
+
+-------------------------------------------------------------------------------
+test.sh
+(update PC IP)
+
+#!/bin/bash
+sudo killall raspivid gst-launch-1.0 test-launch test
+raspivid -t 0 -w 640 -h 480 -fps 30/1 -b 3000000 -g 5 -vf -hf -cd H264 -n -fl -ih -o -  \
+  | gst-launch-1.0 fdsrc  \
+  ! h264parse  \
+  ! rtph264pay pt=96 config-interval=1 \
+  ! tee name=streams \
+  ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+  ! udpsink host=192.168.3.1 port=5100 streams. \
+  ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+  ! udpsink host=127.0.0.1 port=5200  &
+sleep 1
+#/home/pi/Projects/opencv_test/test.py &
+/home/pi/Projects/opencv_test/test &
+
+-------------------------------------------------------------------------------
+Client
+
+gst-launch-1.0 udpsrc port=5100 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 udpsrc port=5500 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+-------------------------------------------------------------------------------
+test.cpp
+
+/*
+g++ -g ./test.cpp -o test `pkg-config --cflags --libs opencv4` -lquirc
+*/
+#include <opencv2/opencv.hpp>
+#include <quirc.h>
+
+#define WIDTH 640
+#define HEIGHT 480
+//#define WIDTH 1280
+//#define HEIGHT 720
+//#define WIDTH 1920
+//#define HEIGHT 1080
+#define FPS 30
+#define SCALE 3/2
+
+using namespace cv;
+using namespace std;
+
+static void draw_qr(Mat &screen, struct quirc *q)
+{
+  int count = quirc_count(q);
+  printf("%d\n",count);
+  int i;
+  for (i = 0; i < count; i++) {
+    struct quirc_code code;
+    struct quirc_data data;
+    quirc_decode_error_t err;
+    int j;
+    int xc = 0;
+    int yc = 0;
+    char buf[128];
+    quirc_extract(q, i, &code);
+    for (j = 0; j < 4; j++) {
+      struct quirc_point *a = &code.corners[j];
+      struct quirc_point *b = &code.corners[(j + 1) % 4];
+      xc += a->x;
+      yc += a->y;
+      line(screen, Point(a->x, a->y), Point(b->x, b->y), Scalar(255,0,0), 8);
+    }
+    xc /= 4;
+    yc /= 4;
+
+    printf("Code size (cells): %d cells\n",code.size);
+    err = quirc_decode(&code, &data);
+    if(!err) printf( "Ver: %d, ECC: %c, Mask: %d, Type: %d",data.version, "MLHQ"[data.ecc_level],data.mask,data.data_type);
+  }
+}
+
+
+int main(int, char**)
+{
+  struct quirc *qr;
+  int cpt=0;
+  Mat data;
+  string streamInGstStr="udpsrc port=5200 ! application/x-rtp,ncoding-name=H264,payload=96 ! rtph264depay ! h264parse ! v4l2h264dec capture-io-mode=4 ! v4l2convert output-io-mode=5 ! appsink";
+  string streamOutGstStr="appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! rtph264pay pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5500";
+
+  VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
+  VideoWriter  streamOut(streamOutGstStr,0,FPS/1,Size(WIDTH,HEIGHT),true);
+
+  qr = quirc_new();
+  quirc_resize(qr, WIDTH, HEIGHT);
+
+  if (streamIn.isOpened() && streamOut.isOpened()) {
+    while (true) {
+      streamIn.read(data);
+      if (!data.empty()) {
+
+        int w;
+	int h;
+	uint8_t *buf = quirc_begin(qr, &w, &h);
+	assert(data.cols == w);
+	assert(data.rows == h);
+	Mat gray;
+	cvtColor(data, gray, COLOR_BGR2GRAY, 0);
+	for (int y = 0; y < gray.rows; y++) {
+  	  for (int x = 0; x < gray.cols; x++) {
+	    buf[(y * w + x)] = gray.at<uint8_t>(y, x);
+	  }
+	}
+	quirc_end(qr);
+	draw_qr(data, qr);
+
+	printf("%d\n",cpt++);
+        streamOut.write(data);
+      }
+    }
+  }
+  return 0;
+}
