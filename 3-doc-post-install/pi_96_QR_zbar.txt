@@ -47,12 +47,6 @@ using namespace cv;
 using namespace std;
 using namespace zbar;
 
-typedef struct
-{
-  string type;
-  string data;
-  vector <Point> location;
-} decodedObject;
 
 int main(int, char**)
 {
@@ -64,39 +58,33 @@ int main(int, char**)
   VideoCapture streamIn(streamInGstStr,CAP_GSTREAMER);
   VideoWriter  streamOut(streamOutGstStr,0,FPS/1,Size(WIDTH,HEIGHT),true);
 
-  vector<decodedObject> decodedObjects;
+  vector<Point> hull;
   ImageScanner scanner;
   scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
   scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_X_DENSITY, 1);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_Y_DENSITY, 1);
+
   Mat imGray;
   if (streamIn.isOpened() && streamOut.isOpened()) {
     while (true) {
       streamIn.read(data);
       if (!data.empty()) {
+
         cvtColor(data, imGray,COLOR_BGR2GRAY);
         Image image(data.cols, data.rows, "Y800", (uchar *)imGray.data, data.cols * data.rows);
-        int n = scanner.scan(image);
-        for(Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
-        {
-          decodedObject obj;
-          obj.type = symbol->get_type_name();
-          obj.data = symbol->get_data();
-          cout << "Type : " << obj.type << endl;
-          cout << "Data : " << obj.data << endl << endl;
-          for(int i = 0; i< symbol->get_location_size(); i++) 
-            obj.location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
-          decodedObjects.push_back(obj);
-        }
-        for(int i = 0; i < decodedObjects.size(); i++)
-        {
-          vector<Point> points = decodedObjects[i].location;
-          vector<Point> hull;
-          if(points.size() > 4) convexHull(points, hull);
-          else hull = points;
-          int n = hull.size();
-          for(int j = 0; j < n; j++) line(data, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
-        }
-       	printf("%d\n",cpt++);
+        if(scanner.scan(image)>0)
+	{
+          for(Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
+          {
+            hull.clear();
+            for(int i=0;i<symbol->get_location_size();i++) hull.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+	  }
+	}
+        if (hull.size()>0) 
+	  for(int j=0;j<4;j++) line(data, hull[j], hull[(j+1)%4], Scalar(0,255,0), 3);
+
+	printf("%d\n",cpt++);
         streamOut.write(data);
       }
     }

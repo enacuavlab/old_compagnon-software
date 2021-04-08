@@ -1,0 +1,72 @@
+cd Projects
+
+Proceed as for raspicv 
+
+RaspiCV/src/Makefile
+
+> LDLIBFLAGS = -ldl -Wl, ...
+> LDLIBFLAGS = -lzbar -ldl -Wl, ...
+
+(*)
+-------------------------------------------------------------------------------
+cd RaspiCV/src
+make
+
+-------------------------------------------------------------------------------
+(*) RaspiCV/src/cv.cpp
+
+#include <zbar.h>
+using namespace zbar;
+...
+static void *process_thread(void *ptr)
+{
+...
+  vector<Point> hull;
+  ImageScanner scanner;
+  scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_X_DENSITY, 1);
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_Y_DENSITY, 1);
+  Mat imGray;
+ 
+  while (true) {
+...
+    Image image(gray.cols, gray.rows, "Y800", (uchar *)gray.data, gray.cols * gray.rows);
+    if(scanner.scan(image)>0)
+    {
+      for(Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
+      {
+        hull.clear();
+        for(int i=0;i<symbol->get_location_size();i++) hull.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+      }
+    }
+    if (hull.size()>0)
+      for(int j=0;j<4;j++) line(grayBGR, hull[j], hull[(j+1)%4], Scalar(0,255,0), 3);
+
+    strOut.write(grayBGR);
+
+-------------------------------------------------------------------------------
+#!/bin/bash
+sudo killall raspicv gst-launch-1.0 test-launch
+rm /tmp/camera*
+BITRATE_VIDEO1=1000000
+BITRATE_VIDEO2=2000000
+/home/pi/Projects/RaspiCV/build/raspicv -t 0 -w 640 -h 480 -fps 30/1 -b $BITRATE_VIDEO1 -vf -hf -cd H264 -n -a ENAC -ae 22 -x /dev/null -r /dev/null -rf gray -o - \
+   | gst-launch-1.0 fdsrc \
+    ! h264parse \
+    ! video/x-h264,stream-format=byte-stream,alignment=au \
+    ! rtph264pay name=pay0 pt=96 config-interval=1 \
+    ! udpsink host=192.168.3.1 port=5700 &
+sleep 3
+gst-launch-1.0 shmsrc socket-path=/tmp/camera3 do-timestamp=true \
+  ! video/x-raw, format=BGR, width=640, height=480, framerate=30/1, colorimetry=1:1:5:1  \
+  ! v4l2h264enc extra-controls="controls,video_bitrate=$BITRATE_VIDEO2" \
+  ! rtph264pay name=pay0 pt=96 config-interval=1 \
+  ! udpsink host=192.168.3.1 port=5600 &
+
+-------------------------------------------------------------------------------
+Client
+
+gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 udpsrc port=5600 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
