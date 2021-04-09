@@ -52,7 +52,7 @@ cp userland/host_applications/linux/apps/raspicam/RaspiVid.c RaspiCV/src/RaspiCV
 
 -------------------------------------------------------------------------------
 replace RaspiCV/src/cv.cpp with the code below (*)
-mkdir -p RaspiCV/build
+mkdir RaspiCV/build
 cd RaspiCV/src
 make
 

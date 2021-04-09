@@ -1,3 +1,7 @@
+P4(32b) ?
+
+
+cd Projects
 git clone https://github.com/marklister/overlayRoot.git
 cd overlayRoot 
 sudo bash install
@@ -17,6 +21,8 @@ sudo chroot /ro
 To add writable "/data"
 - create (gparted) FAT32 on SD
 - plug SD and boot
+
+sudo blkid
 - update /etc/fstab with suitable PARTUUID
 "
 proc            /proc           proc    defaults          0       0

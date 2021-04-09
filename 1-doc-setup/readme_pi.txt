@@ -1,4 +1,4 @@
-PI0/PI3 (OS 32bit)
+PI0/PI3/PI4 (OS 32bit)
 wget https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2020-02-14/2020-02-13-raspbian-buster-lite.zip
 
 PI4 (OS 64bit)

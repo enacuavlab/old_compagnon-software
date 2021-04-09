@@ -92,12 +92,3 @@ int main(int, char**)
   return 0;
 }
 
-
--------------------------------------------------------------------------------
--------------------------------------------------------------------------------
-sudo apt-get install libzbar0
-sudo apt-get install libzbar-dev python-zbar zbar-tools
-
-
-sudo apt-get install python3-pip
-sudo pip3  install pyzbar

@@ -1,6 +1,6 @@
 PIZero installation > 10 hours
-PI3 installation > 4 hours 
-
+PI3 (32b) installation > 3h30 
+PI4 (32b) installation > 0h50 
 
 -------------------------------------------------------------------------------
 sudo apt-get install -y cmake
@@ -9,19 +9,19 @@ sudo apt-get install -y python-numpy python3-numpy libpython-dev libpython3-dev 
 
 sudo apt-get install -y libatlas-base-dev gfortran
 
-for raspberry pi3
+for raspberry pi3/4
 sudo apt-get install -y libgtk2.0-dev
 
 cd Projects
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git 
-cd ~/opencv 
+cd ~/Projects/opencv 
 git checkout 4.5.2
-cd ~/opencv_contrib
+cd ~/Projects/opencv_contrib
 git checkout 4.5.2
 
-mkdir opencv/build
-cd opencv/build
+mkdir ~/Projects/opencv/build
+cd ~/Projects/opencv/build
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
    -D CMAKE_INSTALL_PREFIX=/usr/local \
    -D INSTALL_PYTHON_EXAMPLES=OFF \
