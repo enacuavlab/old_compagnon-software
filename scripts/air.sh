@@ -20,7 +20,7 @@ if [ -n "$1" ]; then
   echo $! >> $PIDFILE
 
   if uname -a | grep -cs "4.9"> /dev/null 2>&1;then $HOME_PRJ/scripts/air_camjet.sh;
-  else $HOME_PRJ/scritps/air_campi.sh;fi
+  else $HOME_PRJ/scripts/air_campi.sh;fi
 
   socat -u /dev/ttyAMA0,raw,echo=0,b115200 udp-sendto:127.0.0.1:4244 > /dev/null 2>&1 &
   echo $! >> $PIDFILE

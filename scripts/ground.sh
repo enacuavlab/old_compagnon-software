@@ -14,20 +14,22 @@ if [ -n "$1" ]; then
 
   wl=$1
 
-  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 1 -u 5600 -c $GCS_IP $wl > /dev/null 2>&1 &
+  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 7 -u 4000 -c 127.0.0.1 -k 1 -n 2 $wl > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
+  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 6 -u 5600 -c $GCS_IP $wl > /dev/null 2>&1 &
   echo $! > $PIDFILE
-  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 2 -u 4242 -c $GCS_IP -k 1 -n 2 $wl > /dev/null 2>&1 &
-  echo $! >> $PIDFILE
-  $HOME_WFB/wfb_tx -K $HOME_WFB/gs.key -p 3 -u 4243 -k 1 -n 2 $wl > /dev/null 2>&1 &
-  echo $! >> $PIDFILE
+  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 1 -u 5700 -c $GCS_IP $wl > /dev/null 2>&1 &
+  echo $! > $PIDFILE
+#  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 2 -u 4242 -c $GCS_IP -k 1 -n 2 $wl > /dev/null 2>&1 &
+#  echo $! >> $PIDFILE
+#  $HOME_WFB/wfb_tx -K $HOME_WFB/gs.key -p 3 -u 4243 -k 1 -n 2 $wl > /dev/null 2>&1 &
+#  echo $! >> $PIDFILE
 
   $HOME_WFB/wfb_tx -K $HOME_WFB/gs.key -p 4 -u 14800 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 5 -u 14801 -c 127.0.0.1 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   
-  #gst-launch-1.0 udpsrc port=5600 ! application/x-rtp,encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink &
-
   socat TUN:10.0.1.1/24,tun-name=groundtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14800 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   socat udp-listen:14801,reuseaddr,fork  TUN:10.0.1.1/24,tun-name=groundtunrx,iff-no-pi,tun-type=tun,iff-up > /dev/null 2>&1 &

@@ -1,3 +1,5 @@
+https://wiki.paparazziuav.org/wiki/Installation/Linux
+
 wget -q "http://download.opensuse.org/repositories/home:/flixr:/paparazzi-uav/Debian_10/Release.key" -O- | sudo apt-key add -
 
 /etc/apt/sources.list
@@ -5,13 +7,19 @@ deb http://download.opensuse.org/repositories/home:/flixr:/paparazzi-uav/Debian_
 
 sudo apt-get update 
 sudo apt-get install paparazzi-dev
-sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi
 sudo apt install ocamlbuild
-
+sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi
 
 cd Projects
 git clone https://github.com/paparazzi/paparazzi.git
 cd paparazzi
 export PAPARAZZI_HOME=/home/pi/Projects/paparazzi
 export PAPARAZZI_SRC=$PAPARAZZI_HOME
-make
+make ground_segment
+
+=>
+File "contrastLabel.mli", line 32, characters 2-17:
+Error: Unbound module GnoCanvas
+
+
+

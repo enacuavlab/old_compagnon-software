@@ -79,6 +79,7 @@ sudo systemctl disable hciuart
 
 -------------------------------------------------------------------------
 Share wireless internet with ethernet
+(Ethernet should connected before wireless powerup)
 
 Ubuntu
 sudo sysctl net.ipv4.ip_forward=1
