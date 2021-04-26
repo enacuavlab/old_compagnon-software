@@ -1,0 +1,78 @@
+#!/usr/bin/python3
+
+#gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+import numpy as np
+import cv2
+import time
+import picamera
+import picamera.array
+import shlex, subprocess
+#from fractions import Fraction
+
+#------------------------------------------------------------------------------
+motion_dtype = np.dtype([
+  ('x', 'i1'),
+  ('y', 'i1'),
+  ('sad', 'u2'),
+  ])
+
+class MyMotionDetector(object):
+  def __init__(self, camera):
+    width, height = camera.resolution
+    self.cols = (width + 15) // 16
+    self.cols += 1 # there's always an extra column
+    self.rows = (height + 15) // 16
+
+  def write(self, s):
+    data = np.frombuffer(s, dtype=motion_dtype)
+    data = data.reshape((self.rows, self.cols))
+    data = np.sqrt(np.square(data['x'].astype(np.float))+np.square(data['y'].astype(np.float))).clip(0, 255).astype(np.uint8)
+    if (data > 60).sum() > 10: print('Motion detected!')
+    return len(s)
+
+
+#------------------------------------------------------------------------------
+class MyAnalysis(picamera.array.PiRGBAnalysis):
+  def __init__(self, camera):
+    super(MyAnalysis, self).__init__(camera)
+    width, height = camera.resolution
+
+#    gst_str_rtp = "appsrc ! video/x-raw, format=BGR, width=1280, height=720, framerate=25/1, colorimetry=1:1:5:1 !  v4l2h264enc ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5600"
+
+    self.strOut =  cv2.VideoWriter('appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5600',cv2.CAP_GSTREAMER, 25, (width,height), True)
+    print(width)
+
+
+  def analyse(self, array):
+#    print('here')
+    gray3 = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
+    gray1 = cv2.cvtColor(gray3, cv2.COLOR_GRAY2BGR)
+    self.strOut.write(gray1)
+
+
+#------------------------------------------------------------------------------
+if __name__ == '__main__':
+
+#      camera = PiCamera(resolution=(1280, 720),framerate=Fraction(1, 6),sensor_mode=3)
+#      camera.shutter_speed = 6000000
+#      camera.iso = 800
+#
+  cmd="gst-launch-1.0 fdsrc ! h264parse ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5700"
+  gstreamer = subprocess.Popen(shlex.split(cmd),stdin=subprocess.PIPE)
+
+  camera = picamera.PiCamera(resolution=(1280, 720),framerate=25)
+
+  camera.start_recording(gstreamer.stdin, format='h264', splitter_port=0)
+  camera.start_recording('test.h264', format='h264', splitter_port=1)
+  camera.start_recording(MyAnalysis(camera), format='rgb', splitter_port=2)
+  camera.start_recording('/dev/null', format='h264',motion_output=MyMotionDetector(camera),splitter_port=3)
+
+  try:
+    while True:
+      time.sleep(0.5)
+  except KeyboardInterrupt:
+    camera.stop_recording()
+    gstreamer.terminate()
+    exit()
+

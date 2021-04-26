@@ -1,5 +1,18 @@
-P4(32b) ?
+Read-only File System with Overlay
 
+sudo raspi-config
+4 Performance Options
+  P3 Overlay File System
+Boot partition write-protected : NO
+
+To disable:
+/boot/cmdline.txt
+remove "boot=overlay"
+
+(*)
+
+-----------------------------------------------------------------------------------------------------
+OLD Procedure
 
 cd Projects
 git clone https://github.com/marklister/overlayRoot.git
@@ -18,6 +31,7 @@ To writable:
 sudo mount -o remount,rw /ro
 sudo chroot /ro
 
+(*)
 To add writable "/data"
 - create (gparted) FAT32 on SD
 - plug SD and boot
