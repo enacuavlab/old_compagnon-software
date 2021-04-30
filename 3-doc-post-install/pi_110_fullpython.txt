@@ -10,6 +10,14 @@ import picamera.array
 import shlex, subprocess
 #from fractions import Fraction
 
+resolution0=(1280,720)
+framerate0=25
+ip0="192.168.3.1"
+port1=5600
+port2=5700
+bitrate1=500000
+bitrate2=500000
+
 #------------------------------------------------------------------------------
 motion_dtype = np.dtype([
   ('x', 'i1'),
@@ -36,12 +44,9 @@ class MyMotionDetector(object):
 class MyAnalysis(picamera.array.PiRGBAnalysis):
   def __init__(self, camera):
     super(MyAnalysis, self).__init__(camera)
-    width, height = camera.resolution
-
-#    gst_str_rtp = "appsrc ! video/x-raw, format=BGR, width=1280, height=720, framerate=25/1, colorimetry=1:1:5:1 !  v4l2h264enc ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5600"
-
-    self.strOut =  cv2.VideoWriter('appsrc ! videoconvert ! omxh264enc ! video/x-h264,profile=high ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5600',cv2.CAP_GSTREAMER, 25, (width,height), True)
-    print(width)
+    cmd='appsrc ! v4l2convert ! v4l2h264enc extra-controls="controls,video_bitrate=%d" output-io-mode=dmabuf-import \
+            ! rtph264pay pt=96 config-interval=1 ! udpsink host=%s port=%d' % (bitrate2,ip0,port2)
+    self.strOut =  cv2.VideoWriter(cmd,cv2.CAP_GSTREAMER, float(camera.framerate), camera.resolution)
 
 
   def analyse(self, array):
@@ -58,12 +63,12 @@ if __name__ == '__main__':
 #      camera.shutter_speed = 6000000
 #      camera.iso = 800
 #
-  cmd="gst-launch-1.0 fdsrc ! h264parse ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=192.168.3.1 port=5700"
+  cmd="gst-launch-1.0 fdsrc ! h264parse ! rtph264pay pt=96 config-interval=1 ! udpsink host=%s port=%d" % (ip0,port1)
   gstreamer = subprocess.Popen(shlex.split(cmd),stdin=subprocess.PIPE)
 
-  camera = picamera.PiCamera(resolution=(1280, 720),framerate=25)
+  camera = picamera.PiCamera(resolution=resolution0,framerate=framerate0)
 
-  camera.start_recording(gstreamer.stdin, format='h264', splitter_port=0)
+  camera.start_recording(gstreamer.stdin, format='h264', bitrate=bitrate1, splitter_port=0)
   camera.start_recording('test.h264', format='h264', splitter_port=1)
   camera.start_recording(MyAnalysis(camera), format='rgb', splitter_port=2)
   camera.start_recording('/dev/null', format='h264',motion_output=MyMotionDetector(camera),splitter_port=3)
@@ -75,4 +80,3 @@ if __name__ == '__main__':
     camera.stop_recording()
     gstreamer.terminate()
     exit()
-
