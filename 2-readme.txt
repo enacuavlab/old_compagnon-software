@@ -30,7 +30,6 @@ rtl8812au
     sudo apt-get install dkms
     sudo make dkms_install
     (dkms status;dkms remove ... --all)
-    sudo cp ../material/rtl8812au.conf /etc/modprobe.d
     sudo apt-get install ethtool
     ethtool -i wlx0013eff21898
 

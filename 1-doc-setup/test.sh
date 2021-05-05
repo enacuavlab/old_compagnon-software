@@ -48,6 +48,7 @@ case "$1" in
     exit 1;;
 
   "7")
+    #ssh pprz@192.168.3.2 ping www.google.com
     sdkmanager --cli install --logintype devzone --targetos Linux --product Jetson --version 4.5 --target=P3668-0000 --deselect 'Jetson OS' --select 'Jetson SDK Components' --license accept --targetimagefolder $WORKFOLDER --downloadfolder $CMP_SDK
     exit 1;;
 
@@ -57,10 +58,14 @@ esac
 : '
 #------------------------------------------------------------------------------
 /etc/NetworkManager/system-connections/...
-
+192.168.3.2
+192.168.3.1
+255.255.255.0
 dns=8.8.8.8,8.8.4.4
 
 ------------------------------------------------------------------------------
+unset http_proxy
+unset https_proxy
 sudo sysctl net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
 
@@ -90,6 +95,19 @@ sudo reboot
 df
 
 ------------------------------------------------------------------------------
+Install compagnon-software
+
+sudo apt-get install v4l-utils socat git
+mkdir /home/pprz/Projects
+cd Projects
+git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
+...
+
+------------------------------------------------------------------------------
+/boot/extlinux/extlinux.conf
+      FDT /boot/tegra194-xavier-nx-cti-NGX004-IMX219-2CAM.dtb
+
+------------------------------------------------------------------------------
 sudo apt install python3-pip
 sudo apt-get install libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran
 
@@ -100,12 +118,5 @@ pip3 install torch
 pip3 install torchvision
 #pip3 install torchaudio
 pip3 install serial
-
-------------------------------------------------------------------------------
-Install compagnon-software
-
-------------------------------------------------------------------------------
-/boot/extlinux/extlinux.conf
-      FDT /boot/tegra194-xavier-nx-cti-NGX004-IMX219-2CAM.dtb
 
 '
