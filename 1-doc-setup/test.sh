@@ -1,8 +1,28 @@
 #!/bin/bash
 
+: '
+-------------------------------------------------------------------------------
+Jetson Nano Developer Kit = Jetson module (P3448-0000) + carrier board (P3449-0000)
+Jetson Nano Developer Kit (part number 945-13450-0000-000), which includes carrier board revision A02)
+
+ 1.Jumper the Force Recovery pins (3 and 4) on J40 button header
+ 2.Connect microUSB alone
+ 3.Flash (10min)
+ 4.Remove the Force Recovery pins
+ 5.Run screen /dev/ttyACM1 115200
+ 6.Jumper the Reset pins (5 and 6) on J40 button header
+ 7.Initial oem-config (set default configuration)
+ 8.Active Ethernet USB: DHCP
+
+-------------------------------------------------------------------------------
+Jetson Xavier NX + Quark (Connecttech carrier board)
+'
+
+#------------------------------------------------------------------------------
 VERSION="4.5"
 #VERSION="4.5.1"
 WORKFOLDER=/home/pprz/Projects/nvidiasandbox
+
 MATERIAL=$WORKFOLDER/Material
 APT=$MATERIAL/nvidia/sdkmanager_1.5.0-7774_amd64.deb
 
@@ -13,18 +33,19 @@ case "$1" in
     if [ "$1" = "nano" ]; then
       TARGET="P3448-0000"
       WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_NANO_DEVKIT
-      FLASH=flash.sh jetson-nano-devkit-emmc mmcblk0p1
+      CMDFLASH="./flash.sh jetson-nano-qspi-sd mmcblk0p1"
     else 
       TARGET="P3668-0000"
       WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
-      FLASH=flash.sh cti/xavier-nx/quark-avt mmcblk0p1
+      CMDFLASH="./flash.sh cti/xavier-nx/quark-avt mmcblk0p1"
     fi
 
     OS_SDK=$MATERIAL/nvidia/Downloads/$VERSION/os_sdkm_downloads
     CMP_SDK=$MATERIAL/nvidia/Downloads/$VERSION/cmp_sdkm_downloads
     L4T=$WORK/Linux_for_Tegra
 
-    CMD="sdkmanager --logintype devzone --targetos Linux --product Jetson --license accept --version $VERSION --target=$TARGET --targetimagefolder $WORKFOLDER"
+    OPT="--version $VERSION --target=$TARGET --targetimagefolder $WORKFOLDER"
+    CMDSDK="sdkmanager --logintype devzone --targetos Linux --product Jetson --license accept $OPT"
 
     #------------------------------------------------------------------------------
     case "$2" in
@@ -35,11 +56,11 @@ case "$1" in
         exit 1;;
     
       "1")
-        $CMD --cli downloadonly --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
+        $CMDSDK --cli downloadonly --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
         exit 1;;
     
       "2")
-        $CMD --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
+        $CMDSDK --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
         exit 1;;
     
       "3")
@@ -52,21 +73,21 @@ case "$1" in
         #lo=`lsusb | grep "NVidia Corp"`
         #echo $lo
         cd $L4T
-        sudo $FLASH
+        sudo $CMDFLASH
         exit 1;;
     
       "5")
-        #ls /dev/ttyUSB0
-        screen /dev/ttyUSB0 115200
+        #ls /dev/ttyACM1
+        screen /dev/ttyACM1 115200
         exit 1;;
     
       "6")
-        $CMD --cli downloadonly --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
+        $CMDSDK --cli downloadonly --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
         exit 1;;
     
       "7")
-        #ssh pprz@192.168.3.2 ping www.google.com
-        $CMD --cli install --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
+        #ssh pprz@192.168.55.1 ping www.google.com
+        $CMDSDK --cli install --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
         exit 1;;
     
     esac
@@ -79,20 +100,15 @@ esac
 
 
 : '
-#------------------------------------------------------------------------------
-/etc/NetworkManager/system-connections/...
-192.168.3.2
-192.168.3.1
-255.255.255.0
-dns=8.8.8.8,8.8.4.4
-
 ------------------------------------------------------------------------------
 unset http_proxy
 unset https_proxy
+
+------------------------------------------------------------------------------
 sudo sysctl net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
 
-ssh pprz@192.168.3.2
+ssh pprz@192.168.55.1
 sudo apt-get update
 
 ------------------------------------------------------------------------------

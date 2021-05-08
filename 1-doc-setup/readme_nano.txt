@@ -1,70 +1,6 @@
-VMware Ubuntu1804 50Gb 2Gb  2 CPU USB-3 NAT (one single file)
-(ubuntu-18.04.5-live-server-amd64.iso)
-Network,French (keyboard), Open-ssh server, no proxy
 
-Options after setup: Shared folders (read & write)
+ssh pprz@192.168.55.1
 
-(sudo mkdir /mnt/hgfs
-sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other)
-
-(sudo dhcpclient ens33)
-
-ip address
-ssh pprz@
-sudo apt-get update
-sudo apt-get upgrade
-
----------------------------------------------------------------------------------------
-sudo lvm 
-lvm> lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
-lvm> exit
-sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
-
----------------------------------------------------------------------------------------
-ssh pprz@192.168.x.y
-sudo apt-get install /mnt/hgfs/vmshare/nvidia/sdkmanager_1.4.1-7402_amd64.deb 
-
-Internet connection needed without proxy or you'll get
-"Session expired. Please log in again", instead of
-"SDK Manager is waiting for you to complete login."
-(use browser to internet on another machine for credentials)
-
-Jetson Nano (Developer Kit version) (P3448-0000)   
-Jetson Xavier NX (Developer Kit version) (P3668-0000) 
-
-sdkmanager --cli downloadonly --logintype devzone --targetos Linux --product Jetson --version 4.5 --target=P3448-0000 --select 'Jetson OS' --deselect 'Jetson SDK Components' --license accept --downloadfolder /mnt/hgfs/vmshare/nvidia/Downloads/nvidia/os_sdkm_downloads
-=> Downloads/nvidia/os_sdkm_downloads (1.7Gb)
-
-sdkmanager --cli install --logintype devzone --targetos Linux --product Jetson --version 4.5 --target P3448-0000 --select 'Jetson OS' --deselect 'Jetson SDK Components' --license accept --offline --downloadfolder /mnt/hgfs/vmshare/nvidia/Downloads/nvidia/os_sdkm_downloads
-
-=> TARGET COMPONENTS:
-  - Jetson OS
-    - Jetson OS image          OS image ready
-        - Drivers for jetson : OS image ready
-        - File System and OS : OS image ready
-
-/home/pprz/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_DEVKIT/Linux_for_Tegra/tools
-sudo ./jetson-disk-image-creator.sh -o sd-blob.img -b jetson-nano -r 200
-=> sd-blob.img (5.2Gb)
-
-Virtual machine / Removal devices
-sudo dd if=sd-blob.img of=/dev/sd? bs=1M oflag=direct
-
--------------------------------------------------------------------------
-First boot with USB keyboard, mouse, HDMI display
-Configure static IP
-192.168.3.2
-255.255.255.0
-192.168.3.1
-8.8.8.8
-
--------------------------------------------------------------------------
-ssh pprz@192.168.3.2
-
-
--------------------------------------------------------------------------
--------------------------------------------------------------------------
-ssh pprz@192.168.x.y
 
 https://developer.nvidia.com/embedded/linux-tegra
 
@@ -72,6 +8,9 @@ wget https://developer.nvidia.com/embedded/l4t/r32_release_v5.1/r32_release_v5.1
 wget https://developer.nvidia.com/embedded/l4t/r32_release_v5.1/r32_release_v5.1/sources/t210/public_sources.tbz2
 wget https://developer.nvidia.com/embedded/l4t/r32_release_v5.1/r32_release_v5.1/t210/tegra_linux_sample-root-filesystem_r32.5.1_aarch64.tbz2
 (1.4Gb)
+(
+https://developer.nvidia.com/embedded/L4T/r32_Release_v5.0/sources/T210/public_sources.tbz2
+)
 
 git clone https://github.com/alliedvision/linux_nvidia_jetson.git
 (without proxy)
@@ -92,13 +31,18 @@ FILE_GCC_64="gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz"
 
 deploy.sh
 DEDICATED_VERSION="32.5.1"
+DEDICATED_VERSION="32.5"
 
 ./setup.sh workdir nano
+=> workdir/Linux_for_Tegra
 ./build.sh workdir nano all all
 ./deploy.sh workdir nano tarball
 => AlliedVision_NVidia_nano_L4T_32.5.1_4.9.140-g84fcaed28.tar.gz (30Mb)
 
+
 Copy the tarball to the target board. Extract the tarball.
+scp AlliedVision_NVidia_nano_L4T_32.5_4.9.140-g28667a208-dirty.tar.gz pprz@192.168.55.1:/home/pprz
+tar xfz AlliedVision_NVidia_nano_L4T_32.5_4.9.140-g28667a208-dirty.tar.gz
 
 sudo cp tegra210-p3448-0000-p3449-0000-a02.dtb /boot/avt_tegra210-p3448-0000-p3449-0000-a02.dtb
 sudo cp Image /boot/avt_Image
@@ -112,25 +56,19 @@ Reboot the board.
 (dtc -s -I fs /proc/device-tree -O dts > log)
 
 
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
+gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1,format=(string)NV12' \
+>     ! nvvidconv ! 'video/x-raw(memory:NVMM),format=(string)I420' \
+>     ! omxh264enc bitrate=2000000 ! 'video/x-h264, stream-format=byte-stream' \
+>     ! h264parse ! rtph264pay config-interval=10 pt=96 ! udpsink host=192.168.55.100 port=5700
 
-sdkmanager --cli downloadonly --logintype devzone --targetos Linux --product Jetson --version 4.5 --target=P3448-0000 --deselect 'Jetson OS' --select 'Jetson SDK Components' --license accept --downloadfolder /mnt/hgfs/vmshare/nvidia/Downloads/nvidia/cmp_sdkm_downloads
+-------------------------------------------------------------------------------------------------------
+v4l2-ctl -d /dev/video0 --set-ctrl red_balance=2000 --set-ctrl blue_balance=1700 --set-ctrl exposure=70000000
+gst-launch-1.0 v4l2src ! video/x-raw,format=BGRx ! nvvidconv flip-method=rotate-180 ! 'video/x-raw(memory:NVMM),width=800,height=600' \
+    ! omxh264enc bitrate=1000000 peak-bitrate=1500000 preset-level=0 ! video/x-h264, stream-format=byte-stream \
+    ! rtph264pay mtu=1400 ! udpsink host=127.0.0.1 port=5700
 
-wireless internet & ethernet
-ping www.google.com
+-------------------------------------------------------------------------------------------------------
+gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 
-sdkmanager --cli install --logintype devzone --targetos Linux --product Jetson --version 4.5 --target P3448-0000 --deselect 'Jetson OS' --select 'Jetson SDK Components' --license accept --offline --downloadfolder /mnt/hgfs/vmshare/nvidia/Downloads/nvidia/cmp_sdkm_downloads
-
-
--------------------------------------------------------------------------
--------------------------------------------------------------------------
-Share wireless internet with ethernet
-
-Ubuntu
-sudo sysctl net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
-
-Jetpack 
-/etc/NetworkManager/system-connections
-dns=8.8.8.8,8.8.4.4
 
