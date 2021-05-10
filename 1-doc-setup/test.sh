@@ -16,6 +16,18 @@ Jetson Nano Developer Kit (part number 945-13450-0000-000), which includes carri
 
 -------------------------------------------------------------------------------
 Jetson Xavier NX + Quark (Connecttech carrier board)
+
+ 1.Connect USB-C
+ 2.PowerOn
+ 3.Press Recovery Button (>10sec) (sudo dmesg -w ...  Product: APX)
+ 4.Flash 
+ 5.PowerOff
+ 6.Plug UART/USB(FTDI) adapter
+ 7.PowerOn
+ 8.Wait 30sec firstboot and Run screen /dev/ttyUSB0 115200
+ 9.escape
+10.Initial oem-config (set network static IP configuration 192.168.3.2/255.255.255.0/192.168.3.1/8.8.8.8,8.8.4,4)
+
 '
 
 #------------------------------------------------------------------------------
@@ -34,10 +46,17 @@ case "$1" in
       TARGET="P3448-0000"
       WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_NANO_DEVKIT
       CMDFLASH="./flash.sh jetson-nano-qspi-sd mmcblk0p1"
+      CFGDEV="/dev/ttyACM1"
     else 
-      TARGET="P3668-0000"
+      TARGET="P3668-0000" # xaviernx
       WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
-      CMDFLASH="./flash.sh cti/xavier-nx/quark-avt mmcblk0p1"
+      CFGDEV="/dev/ttyUSB0"
+      CTIFILE_1=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-32.5-V004.tgz
+      CMDFLASH_1="./flash.sh cti/xavier-nx/quark-imx219 mmcblk0p1"
+      CTIFILE_2=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-AVT-32.5-V002.tgz
+      CMDFLASH_2="./flash.sh cti/xavier-nx/quark-avt mmcblk0p1"
+      #sudo ./flash.sh -r -k kernel-dtb cti/Xavier-NX/quark-imx219 mmcblk0p1
+      #sudo ./flash.sh -r -k kernel cti/Xavier-NX/quark-imx219 mmcblk0p1
     fi
 
     OS_SDK=$MATERIAL/nvidia/Downloads/$VERSION/os_sdkm_downloads
@@ -64,9 +83,13 @@ case "$1" in
         exit 1;;
     
       "3")
-        tar xvf $MATERIAL/connettech/CTI-L4T-XAVIER-NX-AVT-32.5-V002.tgz -C $L4T
-        cd $L4T/CTI-L4T
-        sudo ./install.sh
+        if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+          CMD=CMDFLASH_$3  
+        fi
+
+        #tar xvf $CTIFILE$3 -C $L4T
+        #cd $L4T/CTI-L4T
+        #sudo ./install.sh
         exit 1;;
     
       "4")
@@ -77,8 +100,9 @@ case "$1" in
         exit 1;;
     
       "5")
-        #ls /dev/ttyACM1
-        screen /dev/ttyACM1 115200
+        #ls $CFGDEV
+        screen $CFGDEV 115200
+	# press escape
         exit 1;;
     
       "6")
