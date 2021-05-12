@@ -33,10 +33,13 @@ Jetson Xavier NX + Quark (Connecttech carrier board)
 #------------------------------------------------------------------------------
 VERSION="4.5"
 #VERSION="4.5.1"
+
+#ln -s /mnt/extssd /home/pprz/Projects/nvidiasandbox/workspace
 WORKFOLDER=/home/pprz/Projects/nvidiasandbox
 
 MATERIAL=$WORKFOLDER/Material
 APT=$MATERIAL/nvidia/sdkmanager_1.5.0-7774_amd64.deb
+
 
 #------------------------------------------------------------------------------
 case "$1" in
@@ -48,16 +51,18 @@ case "$1" in
       CMDFLASH="./flash.sh jetson-nano-qspi-sd mmcblk0p1"
       CFGDEV="/dev/ttyACM1"
     else 
-      TARGET="P3668-0000" # xaviernx
-      WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
-      CFGDEV="/dev/ttyUSB0"
-      CTIFILE_1=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-32.5-V004.tgz
-      CMDFLASH_1="./flash.sh cti/xavier-nx/quark-imx219 mmcblk0p1"
-      CTIFILE_2=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-AVT-32.5-V002.tgz
-      CMDFLASH_2="./flash.sh cti/xavier-nx/quark-avt mmcblk0p1"
-      #sudo ./flash.sh -r -k kernel-dtb cti/Xavier-NX/quark-imx219 mmcblk0p1
-      #sudo ./flash.sh -r -k kernel cti/Xavier-NX/quark-imx219 mmcblk0p1
-    fi
+      if [ "$1" = "xaviernx" ]; then
+        TARGET="P3668-0000" # xaviernx
+        CFGDEV="/dev/ttyUSB0"
+        WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
+        PARCTI_1=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-32.5-V004.tgz
+        PARFLASH_1="cti/xavier-nx/quark-imx219 mmcblk0p1"
+        PARCTI_2=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-AVT-32.5-V002.tgz
+        PARFLASH_2="cti/xavier-nx/quark-avt mmcblk0p1"
+        #sudo ./flash.sh -r -k kernel-dtb cti/Xavier-NX/quark-imx219 mmcblk0p1
+        #sudo ./flash.sh -r -k kernel cti/Xavier-NX/quark-imx219 mmcblk0p1
+      fi
+    fi      
 
     OS_SDK=$MATERIAL/nvidia/Downloads/$VERSION/os_sdkm_downloads
     CMP_SDK=$MATERIAL/nvidia/Downloads/$VERSION/cmp_sdkm_downloads
@@ -80,23 +85,42 @@ case "$1" in
     
       "2")
         $CMDSDK --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
+	#cd /home/pprz/Projects/nvidiasandbox
+	#sudo tar cvf JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
+	#sudo mv /home/pprz/Projects/nvidiasandbox/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar /mnt/extssd
+	#sudo tar xvf /mnt/extssd/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar -C /mnt/extssd
+
+	#sudo cp -rp $L4T $WORK/Linux_for_Tegra_1
+	#sudo mv $L4T $WORK/Linux_for_Tegra_2
         exit 1;;
     
       "3")
-        if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-          CMD=CMDFLASH_$3  
+        if [ "$1" = "nano" ]; then
+          tar xvf $CTIFILE_1 -C $L4T;cd $L4T/CTI-L4T;sudo ./install.sh
+        elif [ "$1" = "xaviernx" ]; then
+          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+            if [[ "$3" == "1" ]]; then FILE=$PARCTI_1; else FILE=$PARCTI_2; fi
+            mv $WORK/Linux_for_Tegra_$3 $L4T
+	    tar -xvf $FILE -C $L4T
+	    cd $L4T/CTI-L4T;sudo ./install.sh
+	    mv $L4T  $WORK/Linux_for_Tegra_$3
+          fi
         fi
-
-        #tar xvf $CTIFILE$3 -C $L4T
-        #cd $L4T/CTI-L4T
-        #sudo ./install.sh
         exit 1;;
     
       "4")
         #lo=`lsusb | grep "NVidia Corp"`
         #echo $lo
-        cd $L4T
-        sudo $CMDFLASH
+        if [ "$1" = "nano" ]; then
+          sudo $CMDFLASH
+        elif [ "$1" = "xaviernx" ]; then
+          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+            if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; else PARAM=$PARFLASH_2; fi
+            mv $WORK/Linux_for_Tegra_$3 $L4T
+            cd $L4T;sudo ./flash.sh --no-flash $PARAM # --no-flash
+	    mv $L4T $WORK/Linux_for_Tegra_$3
+          fi
+        fi
         exit 1;;
     
       "5")
@@ -124,6 +148,11 @@ esac
 
 
 : '
+------------------------------------------------------------------------------
+ssd ext4
+sudo mkdir /mnt/extssd
+sudo mount /dev/mmcblk0p1 /mnt/extssd
+
 ------------------------------------------------------------------------------
 unset http_proxy
 unset https_proxy
