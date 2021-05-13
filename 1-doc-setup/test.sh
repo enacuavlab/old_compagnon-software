@@ -2,6 +2,10 @@
 
 : '
 -------------------------------------------------------------------------------
+SDKManager only available on ubuntu1804 (not 20.04 ...) => vm needed !
+(*)
+
+-------------------------------------------------------------------------------
 Jetson Nano Developer Kit = Jetson module (P3448-0000) + carrier board (P3449-0000)
 Jetson Nano Developer Kit (part number 945-13450-0000-000), which includes carrier board revision A02)
 
@@ -34,10 +38,10 @@ Jetson Xavier NX + Quark (Connecttech carrier board)
 VERSION="4.5"
 #VERSION="4.5.1"
 
-#ln -s /mnt/extssd /home/pprz/Projects/nvidiasandbox/workspace
-WORKFOLDER=/home/pprz/Projects/nvidiasandbox
+INPUT=/mnt/hgfs/vmshare
+OUTPUT=/home/pprz
 
-MATERIAL=$WORKFOLDER/Material
+MATERIAL=$INPUT/Material
 APT=$MATERIAL/nvidia/sdkmanager_1.5.0-7774_amd64.deb
 
 
@@ -47,28 +51,31 @@ case "$1" in
 
     if [ "$1" = "nano" ]; then
       TARGET="P3448-0000"
-      WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_NANO_DEVKIT
-      CMDFLASH="./flash.sh jetson-nano-qspi-sd mmcblk0p1"
+      WORK=$OUTPUT/JetPack_4.5_Linux_JETSON_NANO_DEVKIT
+      WORK_1=$OUTPUT/JetPack_4.5_Linux_JETSON_NANO_DEVKIT_1
+      WORK_2=$OUTPUT/JetPack_4.5_Linux_JETSON_NANO_DEVKIT_2
+      PARALLIED=$MATERIAL/allied
+      PARFLASH_1="jetson-nano-qspi-sd mmcblk0p1"
+      PARFLASH_2="jetson-nano-avt mmcblk0p1"
       CFGDEV="/dev/ttyACM1"
     else 
       if [ "$1" = "xaviernx" ]; then
         TARGET="P3668-0000" # xaviernx
         CFGDEV="/dev/ttyUSB0"
-        WORK=$WORKFOLDER/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
+        WORK=$OUTPUT/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
+        WORK_1=$OUTPUT/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT_1
         PARCTI_1=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-32.5-V004.tgz
         PARFLASH_1="cti/xavier-nx/quark-imx219 mmcblk0p1"
         PARCTI_2=$MATERIAL/connecttech/CTI-L4T-XAVIER-NX-AVT-32.5-V002.tgz
         PARFLASH_2="cti/xavier-nx/quark-avt mmcblk0p1"
-        #sudo ./flash.sh -r -k kernel-dtb cti/Xavier-NX/quark-imx219 mmcblk0p1
-        #sudo ./flash.sh -r -k kernel cti/Xavier-NX/quark-imx219 mmcblk0p1
+        WORK_2=$OUTPUT/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT_2
       fi
     fi      
 
     OS_SDK=$MATERIAL/nvidia/Downloads/$VERSION/os_sdkm_downloads
     CMP_SDK=$MATERIAL/nvidia/Downloads/$VERSION/cmp_sdkm_downloads
-    L4T=$WORK/Linux_for_Tegra
 
-    OPT="--version $VERSION --target=$TARGET --targetimagefolder $WORKFOLDER"
+    OPT="--version $VERSION --target=$TARGET --targetimagefolder $OUTPUT"
     CMDSDK="sdkmanager --logintype devzone --targetos Linux --product Jetson --license accept $OPT"
 
     #------------------------------------------------------------------------------
@@ -85,25 +92,26 @@ case "$1" in
     
       "2")
         $CMDSDK --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
-	#cd /home/pprz/Projects/nvidiasandbox
-	#sudo tar cvf JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT
-	#sudo mv /home/pprz/Projects/nvidiasandbox/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar /mnt/extssd
-	#sudo tar xvf /mnt/extssd/JetPack_4.5_Linux_JETSON_XAVIER_NX_DEVKIT.tar -C /mnt/extssd
-
-	#sudo cp -rp $L4T $WORK/Linux_for_Tegra_1
-	#sudo mv $L4T $WORK/Linux_for_Tegra_2
+	sudo cp -rp $WORK $WORK_1
+	sudo mv $WORK $WORK_2
         exit 1;;
     
       "3")
         if [ "$1" = "nano" ]; then
-          tar xvf $CTIFILE_1 -C $L4T;cd $L4T/CTI-L4T;sudo ./install.sh
+          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+            if [[ "$3" == "2" ]]; then 
+	      #FILE=$PARCTI_1; ln -s $WORK_1 $WORK
+              #tar xvf $CTIFILE_1 -C $L4T; cd $L4T/CTI-L4T; sudo ./install.sh
+	      echo "youpi"
+            fi
+          fi
         elif [ "$1" = "xaviernx" ]; then
           if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-            if [[ "$3" == "1" ]]; then FILE=$PARCTI_1; else FILE=$PARCTI_2; fi
-            mv $WORK/Linux_for_Tegra_$3 $L4T
-	    tar -xvf $FILE -C $L4T
-	    cd $L4T/CTI-L4T;sudo ./install.sh
-	    mv $L4T  $WORK/Linux_for_Tegra_$3
+            if [[ "$3" == "1" ]]; then FILE=$PARCTI_1; ln -s $WORK_1 $WORK
+            else FILE=$PARCTI_2; ln -s $WORK_2 $WORK; fi
+	    tar -xvf $FILE -C $WORK/Linux_for_Tegra
+	    cd $WORK/Linux_for_Tegra/CTI-L4T; sudo ./install.sh
+	    rm $WORK
           fi
         fi
         exit 1;;
@@ -112,13 +120,26 @@ case "$1" in
         #lo=`lsusb | grep "NVidia Corp"`
         #echo $lo
         if [ "$1" = "nano" ]; then
-          sudo $CMDFLASH
-        elif [ "$1" = "xaviernx" ]; then
           if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-            if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; else PARAM=$PARFLASH_2; fi
-            mv $WORK/Linux_for_Tegra_$3 $L4T
-            cd $L4T;sudo ./flash.sh --no-flash $PARAM # --no-flash
-	    mv $L4T $WORK/Linux_for_Tegra_$3
+            if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+	    else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+            cd $WORK/Linux_for_Tegra; sudo ./flash.sh --no-flash $PARAM # --no-flash
+	    rm $WORK
+          fi
+        elif [ "$1" = "xaviernx" ]; then
+          if [[ -n "$3" ]]; then
+	    if  ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+              if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+              cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
+	      rm $WORK
+            elif  ([[ "$3" == "3" ]] || [[ "$3" == "4" ]]); then
+              if [[ "$3" == "3" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+              cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel-dtb $PARAM
+              cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel $PARAM
+	      rm $WORK
+            fi
           fi
         fi
         exit 1;;
@@ -148,11 +169,6 @@ esac
 
 
 : '
-------------------------------------------------------------------------------
-ssd ext4
-sudo mkdir /mnt/extssd
-sudo mount /dev/mmcblk0p1 /mnt/extssd
-
 ------------------------------------------------------------------------------
 unset http_proxy
 unset https_proxy
@@ -210,5 +226,46 @@ pip3 install torch
 pip3 install torchvision
 #pip3 install torchaudio
 pip3 install serial
+
+------------------------------------------------------------------------------
+(*)
+VMware Ubuntu1804 100Gb 2Gb  2 CPU USB-3 NAT (one single file)
+(ubuntu-18.04.5-live-server-amd64.iso)
+Network,French (keyboard), Open-ssh server, no proxy
+
+Options after setup: Shared folders (read & write)
+
+(sudo mkdir /mnt/hgfs
+sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other)
+
+(sudo dhcpclient ens33)
+
+ip address
+ssh pprz@
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo lvm
+lvm> lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+lvm> exit
+sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
+
+sudo apt-get install binutils
+
+------------------------------------------------------------------------------
+(*)
+# Put in "/usr/lib/os-release-bionic"
+NAME="Ubuntu"
+VERSION="18.04 (Bionic Beaver)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 18.04"
+VERSION_ID="18.04"
+VERSION_CODENAME=bionic
+UBUNTU_CODENAME=bionic
+
+# Now launch the sdkmanager:
+# $ export LSB_OS_RELEASE=/usr/lib/os-release-bionic
+# $ sdkmanager
 
 '
