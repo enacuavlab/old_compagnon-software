@@ -91,54 +91,64 @@ case "$1" in
         exit 1;;
     
       "2")
-        $CMDSDK --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
-	sudo cp -rp $WORK $WORK_1
-	sudo mv $WORK $WORK_2
+        if [ ! -d $WORK_1 ] || [ ! -d $WORK_2 ] && [ -d $OS_SDK ]; then
+          sudo rm -Rf $WORK_1 $WORK_2 &>/dev/null
+          $CMDSDK --cli install --select 'Jetson OS' --deselect 'Jetson SDK Components' --downloadfolder $OS_SDK
+	  sudo cp -rp $WORK $WORK_1
+	  sudo mv $WORK $WORK_2
+        fi
         exit 1;;
     
       "3")
-        if [ "$1" = "nano" ]; then
-          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-            if [[ "$3" == "2" ]]; then 
-	      #FILE=$PARCTI_1; ln -s $WORK_1 $WORK
-              #tar xvf $CTIFILE_1 -C $L4T; cd $L4T/CTI-L4T; sudo ./install.sh
-	      echo "youpi"
+        if [ -d $WORK_1 ] && [ -d $WORK_2 ]; then
+          if [ "$1" = "nano" ]; then
+            if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+              if [[ "$3" == "2" ]]; then 
+  	        #FILE=$PARCTI_1; ln -s $WORK_1 $WORK
+                #tar xvf $CTIFILE_1 -C $L4T; cd $L4T/CTI-L4T; sudo ./install.sh
+  	        echo "youpi"
+              fi
             fi
-          fi
-        elif [ "$1" = "xaviernx" ]; then
-          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-            if [[ "$3" == "1" ]]; then FILE=$PARCTI_1; ln -s $WORK_1 $WORK
-            else FILE=$PARCTI_2; ln -s $WORK_2 $WORK; fi
-	    tar -xvf $FILE -C $WORK/Linux_for_Tegra
-	    cd $WORK/Linux_for_Tegra/CTI-L4T; sudo ./install.sh
-	    rm $WORK
+          elif [ "$1" = "xaviernx" ]; then
+            if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+              if [[ "$3" == "1" ]]; then FILE=$PARCTI_1; ln -s $WORK_1 $WORK
+              else FILE=$PARCTI_2; ln -s $WORK_2 $WORK; fi
+	      if  [ ! -d $WORK/Linux_for_Tegra/CTI-L4T ]; then 
+  	        tar -xvf $FILE -C $WORK/Linux_for_Tegra
+  	        cd $WORK/Linux_for_Tegra/CTI-L4T; sudo ./install.sh
+              fi
+	      rm $WORK
+            fi
           fi
         fi
         exit 1;;
     
       "4")
-        #lo=`lsusb | grep "NVidia Corp"`
-        #echo $lo
-        if [ "$1" = "nano" ]; then
-          if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-            if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
-	    else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-            cd $WORK/Linux_for_Tegra; sudo ./flash.sh --no-flash $PARAM # --no-flash
-	    rm $WORK
-          fi
-        elif [ "$1" = "xaviernx" ]; then
-          if [[ -n "$3" ]]; then
-	    if  ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+        lo=`lsusb | grep -e "NVidia Corp"`
+        echo $lo
+	if [ -d $WORK_1 ] && [ -d $WORK_2 ] && [[ $lo != 0 ]]; then
+          if [ "$1" = "nano" ]; then
+            if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
               if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
-	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-              cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
-	      rm $WORK
-            elif  ([[ "$3" == "3" ]] || [[ "$3" == "4" ]]); then
-              if [[ "$3" == "3" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
-	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-              cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel-dtb $PARAM
-              cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel $PARAM
-	      rm $WORK
+  	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+              cd $WORK/Linux_for_Tegra; sudo ./flash.sh --no-flash $PARAM # --no-flash
+  	      rm $WORK
+            fi
+          elif [ "$1" = "xaviernx" ]; then
+            if [[ -n "$3" ]]; then
+  	      if  ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+                echo "run"
+                #if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+  	        #else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+                #cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
+  	        #rm $WORK
+              #elif  ([[ "$3" == "3" ]] || [[ "$3" == "4" ]]); then
+              #  if [[ "$3" == "3" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+  	      #.  else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+              #  cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel-dtb $PARAM
+              #  cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel $PARAM
+  	      #  rm $WORK
+              fi
             fi
           fi
         fi
@@ -253,19 +263,18 @@ sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
 sudo apt-get install binutils
 
 ------------------------------------------------------------------------------
-(*)
-# Put in "/usr/lib/os-release-bionic"
-NAME="Ubuntu"
-VERSION="18.04 (Bionic Beaver)"
-ID=ubuntu
-ID_LIKE=debian
-PRETTY_NAME="Ubuntu 18.04"
-VERSION_ID="18.04"
-VERSION_CODENAME=bionic
-UBUNTU_CODENAME=bionic
+(**)
+gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1,format=(string)NV12' \
+    ! nvvidconv ! 'video/x-raw(memory:NVMM),format=(string)I420' \
+    ! omxh264enc bitrate=2000000 ! 'video/x-h264, stream-format=byte-stream' \
+    ! h264parse ! rtph264pay config-interval=10 pt=96 ! udpsink host=192.168.3.1 port=5700
 
-# Now launch the sdkmanager:
-# $ export LSB_OS_RELEASE=/usr/lib/os-release-bionic
-# $ sdkmanager
+sudo apt-get install v4l-utils
+v4l2-ctl -d /dev/video0 --set-ctrl red_balance=2000 --set-ctrl blue_balance=1700 --set-ctrl exposure=70000000
+gst-launch-1.0 v4l2src ! video/x-raw,format=BGRx ! nvvidconv flip-method=rotate-180 ! 'video/x-raw(memory:NVMM),width=800,height=600' \
+    ! omxh264enc bitrate=1000000 peak-bitrate=1500000 preset-level=0 ! video/x-h264, stream-format=byte-stream \
+    ! rtph264pay mtu=1400 ! udpsink host=192.168.3.1 port=5700
 
+sudo apt-get install gstreamer1.0-plugins-bad
+gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 '
