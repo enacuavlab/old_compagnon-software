@@ -124,12 +124,13 @@ case "$1" in
         exit 1;;
     
       "4")
-	if [ -d $WORK_1 ] && [ -d $WORK_2 ] && [ `lsusb | grep "NVidia Corp" | wc -l` == 1 ];  then
+	if [ -d $WORK_1 ] && [ -d $WORK_2 ];  then
+          if [ "$4" == "0" ]; then NOFLASH="--no-flash"; else [ `lsusb | grep "NVidia Corp" | wc -l` == 1 ]; fi
           if [ "$1" = "nano" ]; then
             if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
               if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
   	      else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-              cd $WORK/Linux_for_Tegra; sudo ./flash.sh --no-flash $PARAM # --no-flash
+              cd $WORK/Linux_for_Tegra; sudo ./flash.sh $NOFLASH $PARAM
   	      rm $WORK
             fi
           elif [ "$1" = "xaviernx" ]; then
@@ -137,14 +138,8 @@ case "$1" in
   	      if  ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
                 if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
   	        else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-                cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
+                cd $WORK/Linux_for_Tegra; sudo ./flash.sh $NOFLASH $PARAM
   	        rm $WORK
-              #elif  ([[ "$3" == "3" ]] || [[ "$3" == "4" ]]); then
-              #  if [[ "$3" == "3" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
-  	      #.  else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-              #  cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel-dtb $PARAM
-              #  cd $WORK/Linux_for_Tegra; sudo ./flash.sh -r -k kernel $PARAM
-  	      #  rm $WORK
               fi
             fi
           fi
@@ -159,10 +154,34 @@ case "$1" in
         exit 1;;
     
       "6")
+        if [ -d $WORK_1 ] && [ -d $WORK_2 ]; then
+          if [ "$1" = "nano" ]; then
+            if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+              if [[ "$3" == "1" ]]; then ln -s $WORK_1 $WORK; else ln -s $WORK_2 $WORK; fi
+	      cd $WORK/Linux_for_Tegra/rootfs/boot
+              scp image tegra194-xavier-nx-cti-NGX004-AVT-2CAM.dtb pprz:@192.168.3.2:/home/pprz
+              rm $WORK
+            fi
+          elif [ "$1" = "xaviernx" ]; then
+            if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
+              if [[ "$3" == "1" ]]; then FILE="tegra194-xavier-nx-cti-NGX004-AVT-2CAM.dtb"; ln -s $WORK_1 $WORK
+              else FILE="tegra194-xavier-nx-cti-NGX004-IMX219-2CAM.dtb"; ln -s $WORK_2 $WORK; fi
+	      cd $WORK/Linux_for_Tegra/rootfs/boot
+	      sudo cp Image $3_Image
+	      sudo cp $FILE "$3_$FILE"
+              scp $3_Image "$3_$FILE" pprz@192.168.3.2:/home/pprz
+	      sudo rm $3_Image "$3_$FILE"
+	      rm $WORK
+            fi
+          fi
+        fi
+        exit 1;;
+
+      "7")
         $CMDSDK --cli downloadonly --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
         exit 1;;
     
-      "7")
+      "8")
         #ssh pprz@192.168.55.1 ping www.google.com
         $CMDSDK --cli install --deselect 'Jetson OS' --select 'Jetson SDK Components' --downloadfolder $CMP_SDK
         exit 1;;
@@ -211,7 +230,10 @@ git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.
 
 ------------------------------------------------------------------------------
 /boot/extlinux/extlinux.conf
-      FDT /boot/tegra194-xavier-nx-cti-NGX004-IMX219-2CAM.dtb
+
+      #LINUX /boot/Image
+      LINUX /boot/2_Image
+      FDT /boot/2_tegra194-xavier-nx-cti-NGX004-AVT-2CAM.dtb
 
 ------------------------------------------------------------------------------
 sudo apt install python3-pip
