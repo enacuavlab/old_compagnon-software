@@ -124,9 +124,7 @@ case "$1" in
         exit 1;;
     
       "4")
-        lo=`lsusb | grep -e "NVidia Corp"`
-        echo $lo
-	if [ -d $WORK_1 ] && [ -d $WORK_2 ] && [[ $lo != 0 ]]; then
+	if [ -d $WORK_1 ] && [ -d $WORK_2 ] && [ `lsusb | grep "NVidia Corp" | wc -l` == 1 ];  then
           if [ "$1" = "nano" ]; then
             if [[ -n "$3" ]] && ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
               if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
@@ -137,11 +135,10 @@ case "$1" in
           elif [ "$1" = "xaviernx" ]; then
             if [[ -n "$3" ]]; then
   	      if  ([[ "$3" == "1" ]] || [[ "$3" == "2" ]]); then
-                echo "run"
-                #if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
-  	        #else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
-                #cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
-  	        #rm $WORK
+                if [[ "$3" == "1" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
+  	        else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
+                cd $WORK/Linux_for_Tegra; sudo ./flash.sh $PARAM # --no-flash
+  	        rm $WORK
               #elif  ([[ "$3" == "3" ]] || [[ "$3" == "4" ]]); then
               #  if [[ "$3" == "3" ]]; then PARAM=$PARFLASH_1; ln -s $WORK_1 $WORK
   	      #.  else PARAM=$PARFLASH_2; ln -s $WORK_2 $WORK; fi
@@ -155,9 +152,10 @@ case "$1" in
         exit 1;;
     
       "5")
-        #ls $CFGDEV
-        screen $CFGDEV 115200
-	# press escape
+	if [ `ls $CFGDEV | wc -l` == 1 ];  then
+          sudo screen $CFGDEV 115200
+	  # press escape
+        fi
         exit 1;;
     
       "6")
@@ -179,16 +177,6 @@ esac
 
 
 : '
-------------------------------------------------------------------------------
-unset http_proxy
-unset https_proxy
-
-------------------------------------------------------------------------------
-sudo sysctl net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
-
-ssh pprz@192.168.55.1
-sudo apt-get update
 
 ------------------------------------------------------------------------------
 sudo fdisk -l |grep GiB
@@ -238,7 +226,9 @@ pip3 install torchvision
 pip3 install serial
 
 ------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 (*)
+
 VMware Ubuntu1804 100Gb 2Gb  2 CPU USB-3 NAT (one single file)
 (ubuntu-18.04.5-live-server-amd64.iso)
 Network,French (keyboard), Open-ssh server, no proxy
@@ -263,7 +253,18 @@ sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
 sudo apt-get install binutils
 
 ------------------------------------------------------------------------------
-(**)
+unset http_proxy
+unset https_proxy
+
+------------------------------------------------------------------------------
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
+
+ssh pprz@192.168.55.1
+(ssh pprz@192.168.3.2)
+sudo apt-get update
+
+------------------------------------------------------------------------------
 gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1,format=(string)NV12' \
     ! nvvidconv ! 'video/x-raw(memory:NVMM),format=(string)I420' \
     ! omxh264enc bitrate=2000000 ! 'video/x-h264, stream-format=byte-stream' \
