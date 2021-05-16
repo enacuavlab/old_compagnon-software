@@ -1,7 +1,7 @@
 compagnon-software
 
 -------------------------------------------------------------------------------
-sudo apt-get install v4l-utils socat git
+sudo apt-get install v4l-utils socat git net-tools
 
 -------------------------------------------------------------------------------
 mkdir /home/.../Projects
@@ -83,3 +83,6 @@ systemctl status wifibroadcast.service
 systemctl disable wifibroadcast.service
 systemctl daemon-reload
 
+-------------------------------------------------------------------------------
+ssh pprz@10.0.1.2
+sudo cp material/wifibroadcast.service /etc/systemd/system

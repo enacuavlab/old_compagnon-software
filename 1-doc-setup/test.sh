@@ -198,6 +198,12 @@ esac
 : '
 
 ------------------------------------------------------------------------------
+recovery mode
+sudo ./flash.sh -r -k kernel-dtb cti/xavier-nx/quark-imx219 mmcblk0p1
+recovery mode
+sudo ./flash.sh -r -k kernel cti/xavier-nx/quark-imx219 mmcblk0p1
+
+------------------------------------------------------------------------------
 sudo fdisk -l |grep GiB
 =>
 Disk /dev/mmcblk1: 29.7 GiB, 31914983424 bytes, 62333952 sectors
