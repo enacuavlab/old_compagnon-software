@@ -263,16 +263,28 @@ git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.
       FDT /boot/2_tegra194-xavier-nx-cti-NGX004-AVT-2CAM.dtb
 
 ------------------------------------------------------------------------------
-sudo apt install python3-pip
-sudo apt-get install libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran
+wget https://nvidia.box.com/shared/static/p57jwntv436lfrd78inwl7iml6p13fzh.whl -O torch-1.8.0-cp36-cp36m-linux_aarch64.whl
 
-sudo pip3 install -U pip testresources setuptools==49.6.0
-sudo pip3 install -U numpy==1.19.4 future==0.18.2 mock==3.0.5 h5py==2.10.0 keras_preprocessing==1.1.1 keras_applications==1.0.8 gast==0.2.2 futures protobuf pybind11
-sudo pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow
-pip3 install torch
-pip3 install torchvision
-#pip3 install torchaudio
-pip3 install serial
+sudo apt-get install python3-pip libopenblas-base libopenmpi-dev
+pip3 install Cython
+pip3 install numpy
+pip3 install torch-1.8.0-cp36-cp36m-linux_aarch64.whl
+
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
+cd Projects
+git clone https://github.com/pytorch/vision torchvisiona
+cd torchvision
+git checkout -b v0.9.1
+export BUILD_VERSION=0.9.1
+python3 setup.py install --user
+
+#!/usr/bin/env python3
+import torch
+print(torch.cuda.is_available())
+print(torch.cuda.current_device())
+print(torch.cuda.device(0))
+print(torch.cuda.device_count())
+print(torch.cuda.get_device_name(0))
 
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
