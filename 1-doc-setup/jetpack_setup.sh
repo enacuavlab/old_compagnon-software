@@ -219,32 +219,37 @@ esac
 : '
 
 ------------------------------------------------------------------------------
-recovery mode
-sudo ./flash.sh -r -k kernel-dtb cti/xavier-nx/quark-imx219 mmcblk0p1
-recovery mode
-sudo ./flash.sh -r -k kernel cti/xavier-nx/quark-imx219 mmcblk0p1
+sudo dmesg -w
+=> sdb
+sudo sgdisk -Z -o -n 1 -t 8300 -c 1:"PARTLABEL" /dev/sdx
+sudo mkfs.ext4 /dev/sdx1
 
-------------------------------------------------------------------------------
-sudo fdisk -l |grep GiB
+blkid -o value -s PARTUUID /dev/sdb1
+=> 
+PARTUUID
 =>
-Disk /dev/mmcblk1: 29.7 GiB, 31914983424 bytes, 62333952 sectors
-Disk /dev/mmcblk0: 14.7 GiB, 15758000128 bytes, 30777344 sectors
+cd Linux_for_Tegra/
+bootloader/l4t-rootfs-uuid.txt_ext 
+bootloader/l4t-rootfs-uuid.txt
 
-sudo blkid
-=>
-/dev/mmcblk1p1: UUID="cb377b7d-54dd-4e02-95d6-2fb06ca806c5" TYPE="ext4" PARTUUID="3be52ecb-01"
+sudo mount /dev/sdx1 /mnt
+cd Linux_for_Tegra/rootfs/
+sudo tar -cpf - * | ( cd /mnt/ ; sudo tar -xpf - )
+(6.78Gb / 15 min)
+sync
+sudo umount /mnt
 
-/etc/fstab
-UUID=cb377b7d-54dd-4e02-95d6-2fb06ca806c5       /alt    ext4    defaults        0 2
 
-sudo mkdir /alt
-sudo mount -a
-cd /usr
-sudo mv local share src /alt
-sudo ln -s /alt/* .
-sudo sync
-sudo reboot
-df
+sudo ./flash.sh cti/xavier-nx/quark-imx219 external
+
+
+Initial setup:
+APP Partition size
+=> Leave blank 
+
+df .
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/mmcblk1p1  30545312 6762876  22207756  24% /
 
 ------------------------------------------------------------------------------
 Install compagnon-software
