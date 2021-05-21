@@ -268,21 +268,24 @@ git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.
       FDT /boot/2_tegra194-xavier-nx-cti-NGX004-AVT-2CAM.dtb
 
 ------------------------------------------------------------------------------
+https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-8-0-now-available/72048
+
 wget https://nvidia.box.com/shared/static/p57jwntv436lfrd78inwl7iml6p13fzh.whl -O torch-1.8.0-cp36-cp36m-linux_aarch64.whl
 
 sudo apt-get install python3-pip libopenblas-base libopenmpi-dev
 pip3 install Cython
 pip3 install numpy
+(10 min)
 pip3 install torch-1.8.0-cp36-cp36m-linux_aarch64.whl
 
 sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 cd Projects
-git clone https://github.com/pytorch/vision torchvisiona
+git clone --branch v0.9.0 https://github.com/pytorch/vision torchvision
 cd torchvision
-git checkout -b v0.9.1
-export BUILD_VERSION=0.9.1
+export BUILD_VERSION=0.9.0
 python3 setup.py install --user
 
+test.sh
 #!/usr/bin/env python3
 import torch
 print(torch.cuda.is_available())
@@ -310,7 +313,7 @@ VMware Ubuntu1804 100Gb 2Gb  2 CPU USB-3 NAT (one single file)
 (ubuntu-18.04.5-live-server-amd64.iso)
 Network,French (keyboard), Open-ssh server, no proxy
 
-Options after setup: Shared folders (read & write)
+Options: after setup: Shared folders (read & write)
 
 (sudo mkdir /mnt/hgfs
 sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other)
