@@ -297,6 +297,7 @@ print(torch.cuda.get_device_name(0))
 ------------------------------------------------------------------------------
 sudo dd if=/dev/sdX conv=sync,noerror bs=64K | gzip -c > backup_image.img.gz
 => 31914983424 bytes (32 GB, 30 GiB) copied, 2700.54 s, 11.8 MB/s
+=> 9.3 Gb
 sync
 
 sudo su

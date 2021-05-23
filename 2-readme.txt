@@ -85,4 +85,3 @@ systemctl daemon-reload
 
 -------------------------------------------------------------------------------
 ssh pprz@10.0.1.2
-sudo cp material/wifibroadcast.service /etc/systemd/system
