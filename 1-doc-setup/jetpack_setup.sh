@@ -334,6 +334,8 @@ sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
 sudo apt-get install binutils
 
 ------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
 unset http_proxy
 unset https_proxy
 
@@ -341,10 +343,67 @@ unset https_proxy
 sudo sysctl net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
 
-ssh pprz@192.168.55.1
-(ssh pprz@192.168.3.2)
-sudo apt-get update
 
+------------------------------------------------------------------------------
+FLASH
+
+sudo ./flash.sh cti/xavier-nx/quark-imx219 mmcblk0p1
+
+
+------------------------------------------------------------------------------
+FLASH and boot initial configuration
+
+1) sudo ./flash.sh cti/xavier-nx/quark-imx219 mmcblk0p1
+
+
+2) First boot without SD to initial configure EMMC (mmcblk0p1)
+    
+    ssh pprz@192.168.55.1
+    (ssh pprz@192.168.3.2)
+    First login, wait for the system to setup and update (internet)
+
+    static eth 192.168.3.2/255.255.255.0/192.168.3.1/8.8.8.8,8.8.4.4    
+
+    df .
+    Filesystem     1K-blocks    Used Available Use% Mounted on
+    /dev/mmcblk0p1  14384136 6761096   6872656  50% /
+
+
+3) sudo Linux_for_Tegra/tool/jetson-disk-image-creator.sh -o ~/sd-blob.img -b jetson-xavier-nx-devkit
+
+   balenaEtcher sd-blob.img flash to SD (7.3 Gb/30min, 7 partitions)
+
+
+4) Second boot with SD to initial configure SD (mmcblk1p1)
+    
+    /boot/extlinux/extlinux.conf
+    -----------------------------------------------------------------
+    DEFAULT sd
+    
+    LABEL primary
+      ...
+      APPEND ${cbootargs} quiet root=/dev/mmcblk0p1 ...
+    
+    LABEL sd
+      MENU LABEL sd kernel
+      ...
+      APPEND ${cbootargs} quiet root=/dev/mmcblk1p1 ...
+    -----------------------------------------------------------------  
+    
+    static eth 192.168.3.2/255.255.255.0/192.168.3.1/8.8.8.8,8.8.4.4    
+    APP Partition size: Leave blank
+
+    df .
+    Filesystem     1K-blocks    Used Available Use% Mounted on
+    /dev/mmcblk1p1  30282032 6534284  22432424  23% /
+
+ 
+5) Switch running kernel
+
+    Telnet(UART) is used to answer alternate boot choice (default "sd" or "primary")
+
+
+------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
 gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1,format=(string)NV12' \
     ! nvvidconv ! 'video/x-raw(memory:NVMM),format=(string)I420' \
