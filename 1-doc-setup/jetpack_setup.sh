@@ -219,39 +219,6 @@ esac
 : '
 
 ------------------------------------------------------------------------------
-sudo dmesg -w
-=> sdb
-sudo sgdisk -Z -o -n 1 -t 8300 -c 1:"PARTLABEL" /dev/sdx
-sudo mkfs.ext4 /dev/sdx1
-
-blkid -o value -s PARTUUID /dev/sdb1
-=> 
-PARTUUID
-=>
-cd Linux_for_Tegra/
-bootloader/l4t-rootfs-uuid.txt_ext 
-bootloader/l4t-rootfs-uuid.txt
-
-sudo mount /dev/sdx1 /mnt
-cd Linux_for_Tegra/rootfs/
-sudo tar -cpf - * | ( cd /mnt/ ; sudo tar -xpf - )
-(6.78Gb / 15 min)
-sync
-sudo umount /mnt
-
-
-sudo ./flash.sh cti/xavier-nx/quark-imx219 external
-
-
-Initial setup:
-APP Partition size
-=> Leave blank 
-
-df .
-Filesystem     1K-blocks    Used Available Use% Mounted on
-/dev/mmcblk1p1  30545312 6762876  22207756  24% /
-
-------------------------------------------------------------------------------
 Install compagnon-software
 
 sudo apt-get install v4l-utils socat git
@@ -343,13 +310,6 @@ unset https_proxy
 sudo sysctl net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
 
-
-------------------------------------------------------------------------------
-FLASH
-
-sudo ./flash.sh cti/xavier-nx/quark-imx219 mmcblk0p1
-
-
 ------------------------------------------------------------------------------
 FLASH and boot initial configuration
 
@@ -372,6 +332,9 @@ FLASH and boot initial configuration
 3) sudo Linux_for_Tegra/tool/jetson-disk-image-creator.sh -o ~/sd-blob.img -b jetson-xavier-nx-devkit
 
    balenaEtcher sd-blob.img flash to SD (7.3 Gb/30min, 7 partitions)
+   or 
+     sudo su
+     gunzip -c backup_image.img.gz | dd of=/dev/sdX bs=64K
 
 
 4) Second boot with SD to initial configure SD (mmcblk1p1)
@@ -418,4 +381,43 @@ gst-launch-1.0 v4l2src ! video/x-raw,format=BGRx ! nvvidconv flip-method=rotate-
 
 sudo apt-get install gstreamer1.0-plugins-bad
 gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+OBSOLETE
+------------------------------------------------------------------------------
+sudo dmesg -w
+=> sdb
+sudo sgdisk -Z -o -n 1 -t 8300 -c 1:"PARTLABEL" /dev/sdx
+sudo mkfs.ext4 /dev/sdx1
+
+blkid -o value -s PARTUUID /dev/sdb1
+=> 
+PARTUUID
+=>
+cd Linux_for_Tegra/
+bootloader/l4t-rootfs-uuid.txt_ext 
+bootloader/l4t-rootfs-uuid.txt
+
+sudo mount /dev/sdx1 /mnt
+cd Linux_for_Tegra/rootfs/
+sudo tar -cpf - * | ( cd /mnt/ ; sudo tar -xpf - )
+(6.78Gb / 15 min)
+sync
+sudo umount /mnt
+
+
+sudo ./flash.sh cti/xavier-nx/quark-imx219 external
+
+
+Initial setup:
+APP Partition size
+=> Leave blank 
+
+df .
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/mmcblk1p1  30545312 6762876  22207756  24% /
+
+
 '
