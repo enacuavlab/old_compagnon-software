@@ -262,18 +262,6 @@ print(torch.cuda.device_count())
 print(torch.cuda.get_device_name(0))
 
 ------------------------------------------------------------------------------
-sudo dd if=/dev/sdX conv=sync,noerror bs=64K | gzip -c > backup_image.img.gz
-=> 31914983424 bytes (32 GB, 30 GiB) copied, 2700.54 s, 11.8 MB/s
-=> 9.3 Gb
-sync
-
-sudo su
-gunzip -c backup_image.img.gz | dd of=/dev/sdX bs=64K
-=> 31914983424 bytes (32 GB, 30 GiB) copied, 2027.15 s, 15.7 MB/s
-
-sync
-
-------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
 (*)
 
@@ -332,9 +320,6 @@ FLASH and boot initial configuration
 3) sudo Linux_for_Tegra/tool/jetson-disk-image-creator.sh -o ~/sd-blob.img -b jetson-xavier-nx-devkit
 
    balenaEtcher sd-blob.img flash to SD (7.3 Gb/30min, 7 partitions)
-   or 
-     sudo su
-     gunzip -c backup_image.img.gz | dd of=/dev/sdX bs=64K
 
 
 4) Second boot with SD to initial configure SD (mmcblk1p1)
@@ -365,6 +350,46 @@ FLASH and boot initial configuration
 
     Telnet(UART) is used to answer alternate boot choice (default "sd" or "primary")
 
+
+------------------------------------------------------------------------------
+Clone/Reduce SD after setup and uploaded
+
+sudo dd if=/dev/sdX conv=sync,noerror bs=64K | gzip -c > backup_image.img.gz
+=> 31914983424 bytes (32 GB, 30 GiB) copied, 2700.54 s, 11.8 MB/s
+=> 10 Gb
+sync
+
+sudo gunzip backup_image.img.gz
+=> 32Gb
+
+sudo losetup -f
+=> /dev/loop11
+
+sudo losetup -P /dev/loop11 backup_image.img
+sudo partprobe /dev/loop11
+sudo gparted /dev/loop11
+Shrink left - 10 Mb = 15.44 Gb
+(shrink last partition APP to keep only usefull data in backup)
+
+sudo losetup -d /dev/loop11
+
+Truncate Image of Unpartitioned Free Space
+gdisk -l backup_image.img
+=> 870400        33257471   15.4 GiB    8300  APP
+sudo truncate --size=$[(33257471 +1+33)*512] backup_image.img
+sudo sgdisk -e backup_image.img
+
+sudo dd if=backup_image.img of=/dev/sdX bs=1024K
+=> 17 min (18h31)
+16239+1 records in
+16239+1 records out
+17027842560 bytes (17 GB, 16 GiB) copied, 1001,7 s, 17,0 MB/s
+
+sudo gparted
+Not all of the space available to /dev/sdb appears to be used, you can fix the GPT to use all of the space (an extra 29076447 blocks) or continue with the current setting?
+=> Fix
+
+Resize APP maximize size in SD
 
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
