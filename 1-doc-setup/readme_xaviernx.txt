@@ -90,8 +90,8 @@ sudo apt-get install binutils
 unset http_proxy
 unset https_proxy
 
-export http_proxy=recherche.enac.fr
-export https_proxy=recherche.enac.fr
+export http_proxy=http://proxy:3128
+export https_proxy=http://proxy:3128
 
 ------------------------------------------------------------------------------
 sudo sysctl net.ipv4.ip_forward=1
