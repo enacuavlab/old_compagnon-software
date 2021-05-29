@@ -12,6 +12,7 @@ STR+="ssh pprz@10.0.1.2 \n\n"
 STR+="or \n\n"
 STR+="gst-launch-1.0 udpsrc port=5700 ! application/x-rtp, encoding-name=H264,payload=96 "
 STR+="! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false \n\n"
+STR+="(sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav)\n" 
 STR+="-------------------------------------------------------------------------\n"
 STR+="Do you want to proceed with the installation (Internet and sudo required) " 
 echo -e $STR
@@ -25,7 +26,7 @@ if ! groups | grep -q 'sudo'; then exit -1; fi
 if [ ! -d $DIR ]; then mkdir $DIR; fi
 if [ -d $PROJ ]; then exit -1; fi
 cd $DIR
-sudo apt-get install -y socat git
+sudo apt-get install -y socat git net-tools wireless-tools rfkill
 git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
 cd $PROJ/rtl8812au
 patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
