@@ -60,6 +60,8 @@ if [ ! $USER = "pprz" ]; then
   sed -i 's/pprz/'"$USER"'/g' $PROJ/material/wifibroadcast.service
 fi
 sudo cp $PROJ/material/rtl8812au.conf /etc/modprobe.d
+if ! uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1; 
+  then sudo sh -c "echo 'options 88XXau rtw_switch_usb_mode=1' >> /etc/modprobe.d/rtl8812au.conf"; fi
 sudo cp $PROJ/material/wifibroadcast.service /etc/systemd/system
 sudo cp $PROJ/material/60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
