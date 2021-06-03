@@ -16,10 +16,10 @@ if [ -n "$1" ]; then
 
 #  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 7 -u 4000 -c 127.0.0.1 -k 1 -n 2 $wl > /dev/null 2>&1 &
 #  echo $! >> $PIDFILE
-#  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 6 -u 5600 -c $GCS_IP $wl > /dev/null 2>&1 &
-#  echo $! > $PIDFILE
-  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 1 -u 5700 -c $GCS_IP $wl > /dev/null 2>&1 &
+  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 6 -u 5600 -c $GCS_IP $wl > /dev/null 2>&1 &
   echo $! > $PIDFILE
+  $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 1 -u 5700 -c $GCS_IP $wl > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
   $HOME_WFB/wfb_rx -K $HOME_WFB/gs.key -p 2 -u 4242 -c $GCS_IP -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   $HOME_WFB/wfb_tx -K $HOME_WFB/gs.key -p 3 -u 4243 -k 1 -n 2 $wl > /dev/null 2>&1 &
