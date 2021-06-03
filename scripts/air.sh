@@ -35,5 +35,7 @@ if [ -n "$1" ]; then
   ifconfig airtuntx mtu 1400 up &
 
   while [ ! "`sysctl -w net.ipv4.conf.airtunrx.rp_filter=2`" = "net.ipv4.conf.airtunrx.rp_filter = 2" ];do sleep 1; done
+  route add default airtuntx  > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
 
 fi
