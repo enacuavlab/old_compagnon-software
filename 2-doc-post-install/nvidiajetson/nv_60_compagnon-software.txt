@@ -1,0 +1,11 @@
+
+------------------------------------------------------------------------------
+Install compagnon-software
+
+sudo apt-get install v4l-utils socat git
+mkdir /home/pprz/Projects
+cd Projects
+git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
+...
+
+

@@ -1,0 +1,44 @@
+Clone/Reduce SD after setup and uploaded
+
+1) Backup NVIDIA Jetpack SD card content (7 partitions) to image file
+2) Shrink image file by removing empty part from APP partition
+3) Restore image file to new SD card
+
+-------------------------------------------------------------------------------
+sudo dd if=/dev/sdb conv=sync,noerror bs=1024K of=backup_image.img 
+30528+0 records in
+30528+0 records out
+32010928128 bytes (32 GB, 30 GiB) copied, 2469,73 s, 13,0 MB/s
+=> 32 Gb
+
+-------------------------------------------------------------------------------
+sudo losetup -f
+=> /dev/loop11
+
+sudo losetup -P /dev/loop11 backup_image.img
+sudo partprobe /dev/loop11
+sudo gparted /dev/loop11
+Shrink left - 10 Mb = 15.44 Gb
+(Free space following + 10Mb)
+(shrink last partition APP to keep only usefull data in backup)
+
+sudo losetup -d /dev/loop11
+
+Truncate Image of Unpartitioned Free Space
+gdisk -l backup_image.img
+=> 870400        33257471   15.4 GiB    8300  APP
+sudo truncate --size=$[(33257471 +1+33)*512] backup_image.img
+sudo sgdisk -e backup_image.img
+
+-------------------------------------------------------------------------------
+sudo dd if=backup_image.img of=/dev/sdX bs=1024K
+=> 20 min 
+16239+1 records in
+16239+1 records out
+17027842560 bytes (17 GB, 16 GiB) copied, 1001,7 s, 17,0 MB/s
+
+sudo gparted
+Not all of the space available to /dev/sdb appears to be used, you can fix the GPT to use all of the space (an extra 29076447 blocks) or continue with the current setting?
+=> Fix
+Grow APP maximize size in SD
+

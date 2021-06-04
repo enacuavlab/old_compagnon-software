@@ -1,0 +1,37 @@
+------------------------------------------------------------------------------
+VMware Ubuntu1804 100Gb 2Gb  2 CPU USB-3 NAT (one single file)
+(ubuntu-18.04.5-live-server-amd64.iso)
+Network,French (keyboard), Open-ssh server, no proxy
+
+Options: after setup: Shared folders (read & write)
+
+(sudo mkdir /mnt/hgfs
+sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other)
+
+(sudo dhcpclient ens33)
+
+ip address
+ssh pprz@
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo lvm
+lvm> lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+lvm> exit
+sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
+
+sudo apt-get install binutils
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+unset http_proxy
+unset https_proxy
+
+export http_proxy=http://squid:3128
+export https_proxy=http://squid:3128
+
+------------------------------------------------------------------------------
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
+

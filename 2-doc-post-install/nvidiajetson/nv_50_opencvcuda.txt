@@ -1,9 +1,11 @@
 sudo -H pip3 install -U jetson-stats
 sudo jtop
+check OPENCV + CUDA
 
 -------------------------------------------------------------------------------
 sudo sudo apt-get purge *libopencv*
-:x!
+
 -------------------------------------------------------------------------------
-build_opencv.sh
+build_opencvcuda.sh
+(xavierNx => 3h)
 
