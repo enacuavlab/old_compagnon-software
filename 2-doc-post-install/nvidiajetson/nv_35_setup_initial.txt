@@ -1,0 +1,32 @@
+Jetson Nano / Jetson Xavier NX more Memory
+------------------------------------------
+
+free -h
+=>
+              total        used        free      shared  buff/cache   available
+Mem:           7.6G        503M        6.5G         28M        569M        6.9G
+Swap:          3.8G          0B        3.8G
+
+
+systemctl get-default
+=>
+graphical.target
+
+# Disable X Window System X11 GUI
+sudo systemctl set-default multi-user.target
+systemctl get-default
+=>
+multi-user.target
+
+sudo reboot
+
+free -h
+=>
+              total        used        free      shared  buff/cache   available
+Mem:           7.6G        286M        6.9G         27M        454M        7.1G
+Swap:          3.8G          0B        3.8G
+
+# Enable X Window System X11 GUI
+sudo systemctl set-default graphical.target
+sudo reboot
+

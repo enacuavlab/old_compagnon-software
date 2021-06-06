@@ -1,4 +1,5 @@
 Deepstream
+https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Quickstart.html
 
 -----------------------------------------------------------------------------
 sudo apt install \
@@ -42,10 +43,14 @@ enable=0
 enable=1
 
 deepstream-app -c /opt/nvidia/deepstream/deepstream/samples/configs/deepstream-app/source30_1080p_dec_infer-resnet_tiled_display_int8.txt
-ERROR: Deserialize engine failed because file path: /opt/nvidia/deepstream/deepstream-5.1/samples/configs/deepstream-app/../../models/Primary_Detector/resnet10.caffemodel_b30_gpu0_int8.engine open error
+=>
+...
+ *** DeepStream: Launched RTSP Streaming at rtsp://localhost:8554/ds-test ***
+...
+** INFO: <bus_callback:167>: Pipeline running
+[200~NVMEDIA_ENC: bBlitMode is set to TRUE 
 
-deepstream-app -c /opt/nvidia/deepstream/deepstream/samples/configs/deepstream-app/source4_1080p_dec_infer-resnet_tracker_sgie_tiled_display_int8.txt
-ERROR: Deserialize engine failed because file path: /opt/nvidia/deepstream/deepstream-5.1/samples/configs/deepstream-app/../../models/Secondary_CarMake/resnet18.caffemodel_b16_gpu0_int8.engine open error
+
 
 
 -----------------------------------------------------------------------------

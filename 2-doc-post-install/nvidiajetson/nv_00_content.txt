@@ -1,0 +1,38 @@
+Hardware
+--------
+- Jetson Xavier NX (P3668-0000) + Connect Tech's Quark Carrier
+  EMMC + SD
+- Jetson Nano (P3448-0002) + Jetson Nano Developer Kit carrier board (P3449-0000) 
+  NO 2Gb
+
+
+Software
+--------
+JetPack 4.5.1
+  - OS L4T 32.5.1
+  - JetPack components 
+    - CUDA Toolkit for L4T
+    - cuDNN (CUDA Deep Neural Network)
+    - TensorRT
+    - OpenCV
+    - VisionWorks
+    - VPI
+    - NVIDIA container runtime with Docker integration
+    - Multimedia API
+
+SDK Manager:
+  - Build and flash OS L4T
+  - Build and upload JetPack components
+
+
+Software updated and new install
+--------------------------------
+- compagnon-software (wifibroadcast)
+
+- Opencv replaced with cuda feature version (compilation 3h)
+
+- Pytorch with cuda
+
+- Deepstream
+
+
