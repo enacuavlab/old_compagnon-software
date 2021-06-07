@@ -1,3 +1,6 @@
+ERROR !?
+------
+
 Deepstream
 https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Quickstart.html
 
@@ -49,19 +52,3 @@ deepstream-app -c /opt/nvidia/deepstream/deepstream/samples/configs/deepstream-a
 ...
 ** INFO: <bus_callback:167>: Pipeline running
 [200~NVMEDIA_ENC: bBlitMode is set to TRUE 
-
-
-
-
------------------------------------------------------------------------------
-sudo rm -rf ~/.cache/gstreamer-1.0/
-
-
------------------------------------------------------------------------------
-unset http_proxy
-unset https_proxy
-gst-launch-1.0 rtspsrc location=rtsp://192.168.3.2:8554/ds-test ! rtph264depay ! avdec_h264 ! xvimagesink sync=false
-
-rtsp-port=8554
-udp-port=5400
-
