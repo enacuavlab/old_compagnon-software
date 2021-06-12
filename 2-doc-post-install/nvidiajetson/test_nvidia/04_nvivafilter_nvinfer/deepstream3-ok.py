@@ -80,7 +80,7 @@ if __name__ == '__main__':
     pipeline = Gst.Pipeline()
     
     source = Gst.ElementFactory.make("filesrc", "file-source")
-    source.set_property('location', "sample_720p.h264")
+    source.set_property('location', "/opt/nvidia/deepstream/deepstream-5.1/samples/streams/sample_720p.h264")
     pipeline.add(source)
     
     h264parser = Gst.ElementFactory.make("h264parse", "h264-parser")
