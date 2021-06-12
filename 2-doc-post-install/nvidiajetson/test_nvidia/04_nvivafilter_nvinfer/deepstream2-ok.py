@@ -10,10 +10,6 @@ from common.is_aarch_64 import is_aarch64
 
 import pyds
 
-WIDTH=1280
-HEIGHT=720
-FPS=30
-
 PGIE_CLASS_ID_VEHICLE = 0
 PGIE_CLASS_ID_BICYCLE = 1
 PGIE_CLASS_ID_PERSON = 2
@@ -83,19 +79,22 @@ if __name__ == '__main__':
 
     pipeline = Gst.Pipeline()
     
-    source = Gst.ElementFactory.make("nvarguscamerasrc", "nv-arguscamerasrc")
-    source.set_property('bufapi-version', 1)
+    source = Gst.ElementFactory.make("filesrc", "file-source")
+    source.set_property('location', "/opt/nvidia/deepstream/deepstream-5.1/samples/streams/sample_720p.h264")
     pipeline.add(source)
-
-    caps_nvargussrc = Gst.ElementFactory.make("capsfilter", "nvargussrc_caps")
-    caps_nvargussrc.set_property('caps', Gst.Caps.from_string("video/x-raw(memory:NVMM),width="+str(WIDTH)+",height="+str(HEIGHT)+",framerate="+str(FPS)+"/1"))  
-    srcpad = caps_nvargussrc.get_static_pad("src")
-    pipeline.add(caps_nvargussrc)
-    source.link(caps_nvargussrc)
-
+    
+    h264parser = Gst.ElementFactory.make("h264parse", "h264-parser")
+    pipeline.add(h264parser)
+    source.link(h264parser)
+    
+    decoder = Gst.ElementFactory.make("nvv4l2decoder", "nvv4l2-decoder")
+    srcpad = decoder.get_static_pad("src")
+    pipeline.add(decoder)
+    h264parser.link(decoder)
+    
     streammux = Gst.ElementFactory.make("nvstreammux", "Stream-muxer")
-    streammux.set_property('width', WIDTH)
-    streammux.set_property('height', HEIGHT)
+    streammux.set_property('width', 1920)
+    streammux.set_property('height', 1080)
     streammux.set_property('batch-size', 1)
     streammux.set_property('batched-push-timeout', 4000000)
     sinkpad = streammux.get_request_pad("sink_0")
