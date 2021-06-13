@@ -10,7 +10,7 @@ from common.is_aarch_64 import is_aarch64
 
 import pyds
 
-INFERCONF="/home/pprz/test_nvidia/02_nvivafilter_nvinfer/deepstream-rtsp.cfg" 
+INFERCONF="/home/pprz/Projects/compagnon-software/2-doc-post-install/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream-rtsp.cfg"
 WIDTH=1280
 HEIGHT=720
 FPS=30
