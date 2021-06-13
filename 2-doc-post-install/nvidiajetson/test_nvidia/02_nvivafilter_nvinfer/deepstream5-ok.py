@@ -10,6 +10,7 @@ from common.is_aarch_64 import is_aarch64
 
 import pyds
 
+INFERCONF="/home/pprz/test_nvidia/02_nvivafilter_nvinfer/deepstream-rtsp.cfg" 
 WIDTH=1280
 HEIGHT=720
 FPS=30
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     ! queue \
     ! video/x-raw(memory:NVMM),width="+str(WIDTH)+",height="+str(HEIGHT)+",framerate="+str(FPS)+"/1 \
     ! mx.sink_0 nvstreammux width="+str(WIDTH)+" height="+str(HEIGHT)+" batch-size=1  batched-push-timeout=4000000  name=mx \
-    ! nvinfer config-file-path=deepstream-rtsp.cfg \
+    ! nvinfer config-file-path="+str(INFERCONF)+" \
     ! nvvideoconvert \
     ! nvdsosd name=osd \
     ! nvvideoconvert \

@@ -3,21 +3,25 @@
 PIDFILE=/tmp/wfb.pid
 
 if v4l2-ctl -D | grep "Driver name" | grep "tegra-video" 1> /dev/null 2>&1;then
-  gst-launch-1.0 nvarguscamerasrc \
-    ! 'video/x-raw(memory:NVMM), format=NV12, width=1280, height=720, framerate=30/1' \
-    ! tee name=streams \
-    ! nvv4l2h264enc insert-sps-pps=true bitrate=2000000 \
-    ! h264parse  \
-    ! rtph264pay name=pay0 pt=96 config-interval=1 \
-    ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
-    ! udpsink host=127.0.0.1 port=5700 streams. \
-    ! nvivafilter cuda-process=true customer-lib-name=libnvsample_cudaprocess.so  \
-    ! nvv4l2h264enc insert-sps-pps=true bitrate=2000000 \
-    ! h264parse  \
-    ! rtph264pay name=pay1 pt=96 config-interval=1 \
-    ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
-    ! udpsink host=127.0.0.1 port=5600 > /dev/null 2>&1 &
+
+  /home/pprz/Projects/compagnon-software/2-doc-post-install/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream5-ok.py > /dev/null 2>&1 &
   echo $! >> $PIDFILE
+
+#  gst-launch-1.0 nvarguscamerasrc \
+#    ! 'video/x-raw(memory:NVMM), format=NV12, width=1280, height=720, framerate=30/1' \
+#    ! tee name=streams \
+#    ! nvv4l2h264enc insert-sps-pps=true bitrate=2000000 \
+#    ! h264parse  \
+#    ! rtph264pay name=pay0 pt=96 config-interval=1 \
+#    ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+#    ! udpsink host=127.0.0.1 port=5700 streams. \
+#    ! nvivafilter cuda-process=true customer-lib-name=libnvsample_cudaprocess.so  \
+#    ! nvv4l2h264enc insert-sps-pps=true bitrate=2000000 \
+#    ! h264parse  \
+#    ! rtph264pay name=pay1 pt=96 config-interval=1 \
+#    ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+#    ! udpsink host=127.0.0.1 port=5600 > /dev/null 2>&1 &
+#  echo $! >> $PIDFILE
 
 #  v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=RG10 --stream-mmap
 #  gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1,format=(string)NV12' \
