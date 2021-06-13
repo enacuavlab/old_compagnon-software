@@ -8,8 +8,10 @@ if [ -n "$1" ]; then
 
   wl=$1
 
-  $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 1 -u 5700 $wl > /dev/null 2>&1 &
+  $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 6 -u 5600 $wl > /dev/null 2>&1 &
   echo $! > $PIDFILE
+  $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 1 -u 5700 $wl > /dev/null 2>&1 &
+  echo $! >> $PIDFILE
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 2 -u 4244 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   $HOME_WFB/wfb_rx -K $HOME_WFB/drone.key -p 3 -u 4245 -c 127.0.0.1 -k 1 -n 2 $wl > /dev/null 2>&1 &
