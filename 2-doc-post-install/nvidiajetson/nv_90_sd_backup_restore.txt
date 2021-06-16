@@ -32,6 +32,7 @@ sudo sgdisk -e backup_image.img
 
 -------------------------------------------------------------------------------
 sudo dd if=backup_image.img of=/dev/sdX bs=1024K
+sync
 => 20 min 
 16239+1 records in
 16239+1 records out
