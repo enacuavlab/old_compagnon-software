@@ -1,11 +1,14 @@
-sudo -H pip3 install -U jetson-stats
-sudo jtop
-check OPENCV + CUDA
-
 -------------------------------------------------------------------------------
 sudo sudo apt-get purge *libopencv*
 
 -------------------------------------------------------------------------------
-build_opencvcuda.sh
+nv_shell_build_opencvcuda.sh
 (xavierNx => 3h)
 
+-------------------------------------------------------------------------------
+sudo apt-get install python3-pip
+sudo -H pip3 install -U jetson-stats
+sudo jtop
+
+#6INFO
+OpenCV: Compiled CUDA: YES

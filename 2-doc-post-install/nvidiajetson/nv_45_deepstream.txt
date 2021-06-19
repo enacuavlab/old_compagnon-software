@@ -1,6 +1,4 @@
-ERROR !?
-------
-
+-----------------------------------------------------------------------------
 Deepstream
 https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Quickstart.html
 
@@ -35,20 +33,3 @@ deb https://repo.download.nvidia.com/jetson/common r32.5 main
 sudo apt update
 sudo apt install deepstream-5.1
 
-
------------------------------------------------------------------------------
-source30_1080p_dec_infer-resnet_tiled_display_int8.txt
-source4_1080p_dec_infer-resnet_tracker_sgie_tiled_display_int8.txt
-
-[sink0]
-enable=0
-[sink2]
-enable=1
-
-deepstream-app -c /opt/nvidia/deepstream/deepstream/samples/configs/deepstream-app/source30_1080p_dec_infer-resnet_tiled_display_int8.txt
-=>
-...
- *** DeepStream: Launched RTSP Streaming at rtsp://localhost:8554/ds-test ***
-...
-** INFO: <bus_callback:167>: Pipeline running
-[200~NVMEDIA_ENC: bBlitMode is set to TRUE 

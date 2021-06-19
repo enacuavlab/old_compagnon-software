@@ -1,8 +1,8 @@
+-----------------------------------------------------------------------------
 Deepstream Python
------------------
-
 https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Python_Sample_Apps.html
 
+-----------------------------------------------------------------------------
 sudo apt-get install python-gi-dev
 export GST_LIBS="-lgstreamer-1.0 -lgobject-2.0 -lglib-2.0"
 export GST_CFLAGS="-pthread -I/usr/include/gstreamer-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include"
@@ -22,6 +22,25 @@ sudo git clone https://github.com/NVIDIA-AI-IOT/deepstream_python_apps
 sudo apt-get install libgirepository1.0-dev
 sudo apt-get install gobject-introspection gir1.2-gst-rtsp-server-1.0
 
+-----------------------------------------------------------------------------
+Nano: 
+- Power Jack (3A) + jumper J48 
+- USB mini: Ethernet + SD
+  or ETH: etc/default/networking
+          CONFIGURE_INTERFACES=no
+                     
+          etc/network/interfaces
+          auto eth0
+          iface eth0 inet static
+          address 192.168.3.2
+          netmask 255.255.255.0
+          gateway 192.168.3.1
+
+-----------------------------------------------------------------------------
+Xavier NX: 
+- Power supply should be > 1A
+
+-----------------------------------------------------------------------------
 cd /opt/nvidia/deepstream/deepstream/sources/deepstream_python_apps/apps/deepstream-test1-rtsp-out
 python3 deepstream_test1_rtsp_out.py -i ../../../../samples/streams/sample_720p.h264
 =>
@@ -35,11 +54,9 @@ NVMEDIA_ENC: bBlitMode is set to TRUE
 Frame Number=1 Number of Objects=5 Vehicle_count=3 Person_count=2
 ...
 
-
+-----------------------------------------------------------------------------
 gst-launch-1.0  rtspsrc location=rtsp://192.168.3.2:8554/ds-test ! rtph264depay ! avdec_h264 ! xvimagesink sync=false 
 vlc rtsp://192.168.3.2:8554/ds-test
 
-
-(*) Power supply should be > 1A
 
 
