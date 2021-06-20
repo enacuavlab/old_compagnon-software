@@ -3,20 +3,52 @@
 : '
 -------------------------------------------------------------------------------
 SDKManager only available on ubuntu1804 (not 20.04 ...) => vm needed !
-(*)
+
+VMware Ubuntu1804 100Gb 2Gb  2 CPU USB-3 NAT (one single file)
+(ubuntu-18.04.5-live-server-amd64.iso)
+Network,French (keyboard), Open-ssh server, no proxy
+
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo lvm
+lvm> lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+lvm> exit
+sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
+
+Options after setup: Shared folders (read & write)
+sudo mkdir /mnt/hgfs
+sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other
+
+-------------------------------------------------------------------------------
+unset http_proxy
+unset https_proxy
+
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o wlp59s0 -j MASQUERADE
+
+-------------------------------------------------------------------------------
+/mnt/hgfs/vmshare/Material/
+  nvidia/sdkmanager_1.5.0-7774_amd64.deb
+  nvidia/Downloads/4.5/
+    os_sdkm_downloads/
+    cmp_sdkm_downloads/
+  connecttech/CTI-L4T-XAVIER-NX-32.5-V004.tgz
+  allied/
 
 -------------------------------------------------------------------------------
 Jetson Nano Developer Kit = Jetson module (P3448-0000) + carrier board (P3449-0000)
 Jetson Nano Developer Kit (part number 945-13450-0000-000), which includes carrier board revision A02)
 
- 1.Jumper the Force Recovery pins (3 and 4) on J40 button header
+ 1.Jumper the Force Recovery pins FRC (3 and 4) on J40 button header
  2.Connect microUSB alone
  3.Flash (10min)
  4.Remove the Force Recovery pins
- 5.Run screen /dev/ttyACM1 115200
+ 5.Run screen /dev/ttyACM0 115200
  6.Jumper the Reset pins (5 and 6) on J40 button header
  7.Initial oem-config (set default configuration)
  8.Active Ethernet USB: DHCP
+   ssh pprz@192.168.55.1
 
 -------------------------------------------------------------------------------
 Jetson Xavier NX + Quark (Connecttech carrier board)

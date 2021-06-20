@@ -28,13 +28,14 @@ if ! groups | grep -q 'sudo'; then exit -1; fi
 if [ ! -d $DIR ]; then mkdir $DIR; fi
 if [ -d $PROJ ]; then exit -1; fi
 cd $DIR
-sudo apt-get install -y socat git net-tools wireless-tools rfkill
+sudo apt-get install -y socat git net-tools wireless-tools rfkill v4l-utils
 git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
 cd $PROJ/rtl8812au
 patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
 DKMS=false
 if uname -a | grep -cs "Ubuntu"> /dev/null 2>&1;then DKMS=true; fi
-if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then DKMS=true; fi
+sf uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then DKMS=true; fi
+if uname -a | grep -cs "4.9.140"> /dev/null 2>&1;then DKMS=true; fi
 if $DKMS; then
   echo "blacklist rtl8812au" |sudo tee -a /etc/modprobe.d/blacklist.conf > /dev/null 2>&1
   sudo apt-get install -y dkms
