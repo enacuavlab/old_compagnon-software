@@ -42,6 +42,7 @@ fallback static_eth0
 
 Plug the SD on the PI, and power on
 
+sudo apt-get install nmap
 (nmap -sn 192.168.1.0/24)
 
 ssh pi@...

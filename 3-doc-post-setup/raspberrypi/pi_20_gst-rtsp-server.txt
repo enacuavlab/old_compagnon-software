@@ -7,7 +7,7 @@ sudo apt-get install libgstreamer-plugins-base1.0-dev -y
 gst-launch-1.0 --version
 => gst-launch-1.0 version 1.14.4
 
-cd Projects
+cd ~/Projects
 wget http://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-1.14.4.tar.xz
 tar -xf gst-rtsp-server-1.14.4.tar.xz
 rm gst-rtsp-server-1.14.4.tar.xz
@@ -23,7 +23,7 @@ patched with second stream
  gst_rtsp_mount_points_add_factory (mounts, "/test2", factory2);
 "
 make
-sudo make install
+examples/test-launch.c 
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------

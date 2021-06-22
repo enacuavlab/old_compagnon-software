@@ -1,4 +1,4 @@
-cd Projects
+cd ~/Projects
 
 git clone https://github.com/raspberrypi/userland.git
 git clone https://github.com/adamheinrich/RaspiCV.git

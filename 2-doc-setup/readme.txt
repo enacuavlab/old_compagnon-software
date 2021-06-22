@@ -1,4 +1,4 @@
-Set the targeted installation:
+After installation, set the targeted installation:
 
 /home/pprz/Projects/compagnon-software/scripts/wfb_on.sh
 
