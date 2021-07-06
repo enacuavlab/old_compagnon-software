@@ -46,7 +46,7 @@ sudo apt-get install nmap
 (nmap -sn 192.168.1.0/24)
 
 ssh pi@...
-password: raspberry
+password: raspberrysecosecondaryndary
 
 sudo raspi-config
  1) change user password
@@ -77,6 +77,17 @@ sudo systemctl disable serial-getty@ttyAMA0.service
 
 sudo systemctl stop hciuart
 sudo systemctl disable hciuart
+
+
+For PI4
+
+/boot/config.txt
+dtoverlay=disable-bt
+
+sudo systemctl disable hciuart.service
+sudo systemctl disable bluetooth.service
+
+reboot
 
 -------------------------------------------------------------------------
 Share wireless internet with ethernet

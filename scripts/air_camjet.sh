@@ -4,7 +4,7 @@ PIDFILE=/tmp/wfb.pid
 
 if v4l2-ctl -D | grep "Driver name" | grep "tegra-video" 1> /dev/null 2>&1;then
 
-  /home/pprz/Projects/compagnon-software/2-doc-post-install/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream6-ok.py > /dev/null 2>&1 &
+  /home/pprz/Projects/compagnon-software/3-doc-post-setup/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream6-ok.py > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
 #  gst-launch-1.0 nvarguscamerasrc \

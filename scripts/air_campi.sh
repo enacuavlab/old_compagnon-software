@@ -7,8 +7,10 @@ PIDFILE=/tmp/wfb.pid
 WIDTH=1280
 HEIGHT=720
 FPS=10
-BITRATE_VIDEO1=400000
-BITRATE_VIDEO2=400000
+#BITRATE_VIDEO1=400000
+#BITRATE_VIDEO2=400000
+BITRATE_VIDEO1=3000000
+BITRATE_VIDEO2=3000000
 
 rm /tmp/camera*
 /home/pi/Projects/RaspiCV/build/raspicv -t 0 -w $WIDTH -h $HEIGHT -fps $FPS/1 -b $BITRATE_VIDEO1 -g $FPS -vf -hf -cd H264 -n -a ENAC -ae 22 -x /dev/null -r /dev/null -rf gray -o - \

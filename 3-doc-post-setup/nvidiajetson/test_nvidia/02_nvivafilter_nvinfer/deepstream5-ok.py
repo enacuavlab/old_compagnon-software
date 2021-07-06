@@ -89,7 +89,12 @@ if __name__ == '__main__':
   GObject.threads_init()
   Gst.init(None)
 
-  pipeline = Gst.parse_launch("nvarguscamerasrc bufapi-version=1  \
+  pipeline = Gst.parse_launch("nvarguscamerasrc \
+    ! video/x-raw(memory:NVMM),format=NV12,width="+str(WIDTH)+",height="+str(HEIGHT)+",framerate="+str(FPS)+"/1 \
+    ! nvvidconv flip-method=2 \
+    ! video/x-raw,pixel-aspect-ratio=1/1 \
+    ! nvvideoconvert \
+    ! video/x-raw(memory:NVMM) \
     ! tee name=streams \
     ! queue \
     ! nvv4l2h264enc insert-sps-pps=true bitrate="+str(BITRATE1)+" \
@@ -97,8 +102,7 @@ if __name__ == '__main__':
     ! rtph264pay \
     ! udpsink host="+str(IP)+" port="+str(PORT1)+" streams. \
     ! queue \
-    ! video/x-raw(memory:NVMM),width="+str(WIDTH)+",height="+str(HEIGHT)+",framerate="+str(FPS)+"/1 \
-    ! mx.sink_0 nvstreammux width="+str(WIDTH)+" height="+str(HEIGHT)+" batch-size=1  batched-push-timeout=4000000  name=mx \
+    ! mx.sink_0 nvstreammux width="+str(WIDTH)+" height="+str(HEIGHT)+" batch-size=1  live-source=1 name=mx \
     ! nvinfer config-file-path="+str(INFERCONF)+" \
     ! nvvideoconvert \
     ! nvdsosd name=osd \
@@ -107,6 +111,25 @@ if __name__ == '__main__':
     ! nvv4l2h264enc bitrate="+str(BITRATE2)+" preset-level=1 insert-sps-pps=1 bufapi-version=1 \
     ! rtph264pay \
     ! udpsink host="+str(IP)+" port="+str(PORT2)+" async=False sync=1")
+
+#  pipeline = Gst.parse_launch("nvarguscamerasrc bufapi-version=1  \
+#    ! tee name=streams \
+#    ! queue \
+#    ! nvv4l2h264enc insert-sps-pps=true bitrate="+str(BITRATE1)+" \
+#    ! h264parse  \
+#    ! rtph264pay \
+#    ! udpsink host="+str(IP)+" port="+str(PORT1)+" streams. \
+#    ! queue \
+#    ! video/x-raw(memory:NVMM),width="+str(WIDTH)+",height="+str(HEIGHT)+",framerate="+str(FPS)+"/1 \
+#    ! mx.sink_0 nvstreammux width="+str(WIDTH)+" height="+str(HEIGHT)+" batch-size=1  batched-push-timeout=4000000  name=mx \
+#    ! nvinfer config-file-path="+str(INFERCONF)+" \
+#    ! nvvideoconvert \
+#    ! nvdsosd name=osd \
+#    ! nvvideoconvert \
+#    ! video/x-raw(memory:NVMM), format=I420 \
+#    ! nvv4l2h264enc bitrate="+str(BITRATE2)+" preset-level=1 insert-sps-pps=1 bufapi-version=1 \
+#    ! rtph264pay \
+#    ! udpsink host="+str(IP)+" port="+str(PORT2)+" async=False sync=1")
 
   pipeline.get_by_name("osd").get_static_pad("sink").add_probe(Gst.PadProbeType.BUFFER, osd_sink_pad_buffer_probe, 0)
    
