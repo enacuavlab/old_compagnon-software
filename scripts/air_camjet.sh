@@ -4,8 +4,40 @@ PIDFILE=/tmp/wfb.pid
 
 if v4l2-ctl -D | grep "Driver name" | grep "tegra-video" 1> /dev/null 2>&1;then
 
-  /home/pprz/Projects/compagnon-software/3-doc-post-setup/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream6-ok.py > /dev/null 2>&1 &
+  name=/home/pprz/record
+  current=$(df / | grep / | awk '{ print $5}' | sed 's/%//g')
+  if [ "$current" -gt "80" ];
+    then valve_close=true;
+    else
+      valve_close=false
+      i=0
+      while [[ -e $name-$i.avi ]] ; do
+        let i++
+      done
+      name=$name-$i
+  fi
+
+  gst-launch-1.0 nvarguscamerasrc \
+     ! 'video/x-raw(memory:NVMM), format=NV12, width=1280, height=720, framerate=30/1' \
+     ! nvvidconv flip-method=2 \
+     ! video/x-raw,pixel-aspect-ratio=1/1 \
+     ! nvvideoconvert \
+     ! 'video/x-raw(memory:NVMM)' \
+     ! tee name=streams \
+     ! nvv4l2h264enc insert-sps-pps=true bitrate=2000000 \
+     ! h264parse  \
+     ! rtph264pay name=pay0 pt=96 config-interval=1 \
+     ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+     ! udpsink host=127.0.0.1 port=5700 streams. \
+     ! queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 \
+     ! valve drop=$valve_close \
+     ! nvv4l2h264enc \
+     ! avimux \
+     ! filesink location=$name.avi async=false > /dev/null 2>&1 &
   echo $! >> $PIDFILE
+
+#  /home/pprz/Projects/compagnon-software/3-doc-post-setup/nvidiajetson/test_nvidia/02_nvivafilter_nvinfer/deepstream6-ok.py > /dev/null 2>&1 &
+#  echo $! >> $PIDFILE
 
 #  gst-launch-1.0 nvarguscamerasrc \
 #    ! 'video/x-raw(memory:NVMM), format=NV12, width=1280, height=720, framerate=30/1' \
