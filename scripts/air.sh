@@ -21,12 +21,17 @@ if [ -n "$1" ]; then
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 5 -u 14900 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
-  if uname -a | grep -cs "4.9"> /dev/null 2>&1;then $HOME_PRJ/scripts/air_camjet.sh;
-  else $HOME_PRJ/scripts/air_campi.sh;fi
+  if uname -a | grep -cs "4.9"> /dev/null 2>&1;then
+    DEVICE="/dev/ttyTHS1"
+    $HOME_PRJ/scripts/air_camjet.sh
+  else
+    DEVICE="/dev/ttyAMA0"
+    $HOME_PRJ/scripts/air_campi.sh
+  fi
 
-  socat -u /dev/ttyAMA0,raw,echo=0,b115200 udp-sendto:127.0.0.1:4244 > /dev/null 2>&1 &
+  socat -u $DEVICE,raw,echo=0,b115200 udp-sendto:127.0.0.1:4244 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
-  socat -u udp-listen:4245,reuseaddr,fork /dev/ttyAMA0,raw,echo=0,b115200 > /dev/null 2>&1 &
+  socat -u udp-listen:4245,reuseaddr,fork $DEVICE,raw,echo=0,b115200 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
   socat TUN:10.0.1.2/24,tun-name=airtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14900 > /dev/null 2>&1 &
