@@ -29,7 +29,7 @@ if [ -n "$1" ]; then
     $HOME_PRJ/scripts/air_campi.sh
   fi
 
-  socat -u $DEVICE,raw,echo=0,b115200 udp-sendto:127.0.0.1:4244 > /dev/null 2>&1 &
+  socat -u $DEVICE,raw,echo=0,b115200 - | tee >(socat - udp-sendto:127.0.0.1:4244) >(socat - udp-sendto:127.0.0.1:4246) > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   socat -u udp-listen:4245,reuseaddr,fork $DEVICE,raw,echo=0,b115200 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
