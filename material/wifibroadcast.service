@@ -11,6 +11,7 @@ Type=idle
 RemainAfterExit=yes
 ExecStartPre=/bin/sleep 2
 ExecStart=/home/pprz/Projects/compagnon-software/scripts/wfb_on.sh
+ExecReload=/home/pprz/Projects/compagnon-software/scripts/wfb_on.sh
 ExecStop=/home/pprz/Projects/compagnon-software/scripts/wfb_off.sh
 
 [Install]
