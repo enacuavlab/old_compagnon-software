@@ -4,9 +4,10 @@ HOME_PRJ=/home/pprz/Projects/compagnon-software/
 HOME_WFB=$HOME_PRJ/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 
-if [ -n "$1" ]; then
+if [ $# -eq 2 ]; then
 
   wl=$1
+  nb=$2
 
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 6 -u 5600 $wl > /dev/null 2>&1 &
   echo $! > $PIDFILE
@@ -34,9 +35,9 @@ if [ -n "$1" ]; then
   socat -u udp-listen:4245,reuseaddr,fork $DEVICE,raw,echo=0,b115200 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
-  socat TUN:10.0.1.2/24,tun-name=airtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14900 > /dev/null 2>&1 &
+  socat TUN:10.0.$((1+nb)).2/24,tun-name=airtuntx,iff-no-pi,tun-type=tun,iff-up udp-sendto:127.0.0.1:14900 > /dev/null 2>&1 &
   echo $! >> $PIDFILE
-  socat udp-listen:14901,reuseaddr,fork TUN:10.0.1.2/24,tun-name=airtunrx,iff-no-pi,tun-type=tun,iff-up > /dev/null 2>&1 &
+  socat udp-listen:14901,reuseaddr,fork TUN:10.0.$((1+nb)).2/24,tun-name=airtunrx,iff-no-pi,tun-type=tun,iff-up > /dev/null 2>&1 &
   echo $! >> $PIDFILE
   sleep 1
   ifconfig airtuntx mtu 1400 up &
