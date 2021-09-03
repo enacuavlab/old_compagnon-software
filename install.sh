@@ -66,9 +66,9 @@ if ! uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;
 sudo cp $PROJ/material/wifibroadcast.service /etc/systemd/system
 sudo cp $PROJ/material/60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
-systemctl enable wifibroadcast.service
-systemctl start wifibroadcast.service
-systemctl daemon-reload
+sudo systemctl enable wifibroadcast.service
+sudo systemctl start wifibroadcast.service
+sudo systemctl daemon-reload
 if ! $DKMS; then 
   sudo sh -c "echo 'denyinterfaces wlan1' >> /etc/dhcpcd.conf"
 fi
