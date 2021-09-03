@@ -36,7 +36,7 @@ class PprzTransport(object):
                 self.state = PprzParserState.GotSTX
         elif self.state == PprzParserState.GotSTX:
             self.length = b - 4
-            if self.length < 0:
+            if self.length <= 0:
                 self.state = PprzParserState.WaitSTX
                 return False
             self.buf = bytearray(b)
