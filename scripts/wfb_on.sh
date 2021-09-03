@@ -7,7 +7,6 @@ FILES=/tmp/wfb_*.pid
 
 CHANNELS=(36 40 44 48)
 WLS=()
-AIR_CHAN_ID=0
 
 
 if ls $DEVICES 1> /dev/null 2>&1; then
@@ -28,7 +27,13 @@ if ls $DEVICES 1> /dev/null 2>&1; then
         break
       fi
     done
-   
+
+    # AIRBORNE
+    # Choose (uncomment) bypass id for air.sh
+    #id=0
+    #id=1
+    #id=2
+
     if [ $id -ge 0 ]; then
 	
       ph=`iw dev $wl info | grep wiphy | awk '{print "phy"$2}'`
@@ -48,7 +53,7 @@ if ls $DEVICES 1> /dev/null 2>&1; then
       PIDFILE=/tmp/wfb_${id}_${wl}.pid
       touch $PIDFILE
       $HOME_PRJ/scripts/ground.sh $wl $id  > /dev/null 2>&1 &
-      #$HOME_PRJ/scripts/air.sh $wl $AIR_CHAN_ID  > /dev/null 2>&1 &
+      #$HOME_PRJ/scripts/air.sh $wl $id  > /dev/null 2>&1 &
       echo $! > $PIDFILE
 
     fi
