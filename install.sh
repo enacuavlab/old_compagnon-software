@@ -49,6 +49,7 @@ cd $PROJ/wifibroadcast
 sudo apt-get install -y libpcap-dev libsodium-dev
 make all_bin
 #make gs.key
+rm -Rf $PROJ/patched
 mkdir $PROJ/patched
 cp $PROJ/scripts/air.sh $PROJ/patched
 cp $PROJ/scripts/ground.sh $PROJ/patched
@@ -61,7 +62,7 @@ sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/patched/wifibroadcast.service
 #sudo cp $PROJ/material/rtl8812au.conf /etc/modprobe.d
 if ! uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1; 
   then sudo sh -c "echo 'options 88XXau rtw_switch_usb_mode=1' >> /etc/modprobe.d/rtl8812au.conf"; fi
-sudo cp $PROJ/scripts/wifibroadcast.service /etc/systemd/system
+sudo cp $PROJ/patched/wifibroadcast.service /etc/systemd/system
 sudo cp $PROJ/material/60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
 sudo systemctl enable wifibroadcast.service
