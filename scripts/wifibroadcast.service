@@ -10,8 +10,8 @@ Type=idle
 #Type=oneshot
 RemainAfterExit=yes
 ExecStartPre=/bin/sleep 2
-ExecStart=compagnonsoftwarepath/scripts/wfb_on.sh
-ExecReload=compagnonsoftwarepath/scripts/wfb_on.sh
+ExecStart=compagnonsoftwarepath/patched/wfb_on.sh
+ExecReload=compagnonsoftwarepath/patched/wfb_on.sh
 ExecStop=compagnonsoftwarepath/scripts/wfb_off.sh
 
 [Install]

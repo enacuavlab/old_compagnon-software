@@ -49,11 +49,15 @@ cd $PROJ/wifibroadcast
 sudo apt-get install -y libpcap-dev libsodium-dev
 make all_bin
 #make gs.key
-sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/air.sh
-sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/air.sh
-sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/ground.sh
-sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/wfb_on.sh
-sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/wifibroadcast.service
+mkdir $PROJ/patched
+cp $PROJ/scripts/air.sh $PROJ/patched
+cp $PROJ/scripts/ground.sh $PROJ/patched
+cp $PROJ/scripts/wfb_on.sh $PROJ/patched
+cp $PROJ/scripts/wifibroadcast.service $PROJ/patched
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/patched/air.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/patched/ground.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/patched/wfb_on.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/patched/wifibroadcast.service
 #sudo cp $PROJ/material/rtl8812au.conf /etc/modprobe.d
 if ! uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1; 
   then sudo sh -c "echo 'options 88XXau rtw_switch_usb_mode=1' >> /etc/modprobe.d/rtl8812au.conf"; fi
