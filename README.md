@@ -88,9 +88,8 @@ sudo apt-get install gstreamer1.0-libav -y;\
 sudo apt-get install gstreamer1.0-omx -y;\
 sudo apt-get install gstreamer1.0-tools -y
 
-
-
 ----------------------------------------------------
-Previous NVIDI Jetson get and flash firmware
+Previous NVIDIA Jetson nano and Nx get and flash firmware
+-----------------------------------
 
 To be continue
