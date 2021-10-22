@@ -4,7 +4,9 @@
 #  /usr/bin/ssh  root@groundpi_112 "/home/pi/groundpi.sh 192.168.1.236 > /dev/null 2>&1 &"
 #if [ -z "$1" ];then GCS_IP="127.0.0.1";else GCS_IP=$1;fi
 
-HOME_WFB=/home/pprz/Projects/compagnon-software/wifibroadcast
+
+HOME_PRJ=compagnonsoftwarepath
+HOME_WFB=$HOME_PRJ/wifibroadcast
 
 #GCS_IP=192.168.3.1
 GCS_IP=127.0.0.1

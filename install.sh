@@ -18,20 +18,14 @@ STR+="Virtual Machine Setting / Hardware / USB Controller / USB compatibility US
 STR+="-------------------------------------------------------------------------\n"
 STR+="Do you want to proceed with the installation (Internet and sudo required) " 
 echo -e $STR
-cd ~
 USER=`basename $PWD`
-DIR=/home/$USER/Projects
-PROJ=$DIR/compagnon-software
+PROJ=$PWD
 read -p "for this side in $PROJ (y/n) ?" ANSWER
 if [ ! $ANSWER = "y" ] || [ -z $ANSWER ]; then exit -1; fi
 if ! groups | grep -q 'sudo'; then exit -1; fi
-if [ ! -d $DIR ]; then mkdir $DIR; fi
-if [ -d $PROJ ]; then exit -1; fi
-cd $DIR
 sudo apt-get install -y socat git net-tools wireless-tools rfkill v4l-utils
-git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.git
 cd $PROJ/rtl8812au
-patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
+#patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
 DKMS=false
 if uname -a | grep -cs "Ubuntu"> /dev/null 2>&1;then DKMS=true; fi
 if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then DKMS=true; fi
@@ -53,17 +47,17 @@ else
 fi  
 cd $PROJ/wifibroadcast
 sudo apt-get install -y libpcap-dev libsodium-dev
-make all_bin gs.key
-if [ ! $USER = "pprz" ]; then
-  sed -i 's/pprz/'"$USER"'/g' $PROJ/scripts/air.sh
-  sed -i 's/pprz/'"$USER"'/g' $PROJ/scripts/ground.sh
-  sed -i 's/pprz/'"$USER"'/g' $PROJ/scripts/wfb_on.sh
-  sed -i 's/pprz/'"$USER"'/g' $PROJ/material/wifibroadcast.service
-fi
-sudo cp $PROJ/material/rtl8812au.conf /etc/modprobe.d
+make all_bin
+#make gs.key
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/air.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/air.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/ground.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/wfb_on.sh
+sed -i 's|compagnonsoftwarepath|'"$PROJ"'|g' $PROJ/scripts/wifibroadcast.service
+#sudo cp $PROJ/material/rtl8812au.conf /etc/modprobe.d
 if ! uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1; 
   then sudo sh -c "echo 'options 88XXau rtw_switch_usb_mode=1' >> /etc/modprobe.d/rtl8812au.conf"; fi
-sudo cp $PROJ/material/wifibroadcast.service /etc/systemd/system
+sudo cp $PROJ/scripts/wifibroadcast.service /etc/systemd/system
 sudo cp $PROJ/material/60-wifibroadcast.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
 sudo systemctl enable wifibroadcast.service

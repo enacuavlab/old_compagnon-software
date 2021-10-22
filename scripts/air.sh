@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOME_PRJ=/home/pprz/Projects/compagnon-software/
+HOME_PRJ=compagnonsoftwarepath
 HOME_WFB=$HOME_PRJ/wifibroadcast
 PIDFILE=/tmp/wfb.pid
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOME_PRJ=/home/pprz/Projects/compagnon-software
+HOME_PRJ=compagnonsoftwarepath
 
 DEVICES=/sys/class/net/wl*
 FILES=/tmp/wfb_*.pid
