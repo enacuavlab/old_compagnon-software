@@ -22,7 +22,7 @@ if [ $# -eq 2 ]; then
   $HOME_WFB/wfb_tx -K $HOME_WFB/drone.key -p 5 -u 14900 -k 1 -n 2 $wl > /dev/null 2>&1 &
   echo $! >> $PIDFILE
 
-  if uname -a | grep -cs "4.9"> /dev/null 2>&1;then
+  if uname -a | grep -cs "4\.9"> /dev/null 2>&1;then
     DEVICE="/dev/ttyTHS1"
     $HOME_PRJ/scripts/air_camjet.sh
   else
