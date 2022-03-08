@@ -33,7 +33,8 @@ ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1  
 network={  
 	ssid="feiying"  
-	psk="pprzpprz"  
+	psk="pprzpprz"       
+	key_mgmt=WPA-PSK
 }  
 "  
   
@@ -93,7 +94,15 @@ sudo apt-get install gstreamer1.0-plugins-ugly -y;\
 sudo apt-get install gstreamer1.0-libav -y;\  
 sudo apt-get install gstreamer1.0-omx -y;\  
 sudo apt-get install gstreamer1.0-tools -y  
+
+
+gst-launch-1.0 -vvvv libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12,colorimetry=bt601,framerate=30/1,interlace-mode=progressive ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=3800000 ! 'video/x-h264,level=(string)4' ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=10.42.0.1 port=5000
+
+gst-launch-1.0 udpsrc port=5000 ! application/x-rtp,encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
+
   
+
 ----------------------------------------------------  
 Previous NVIDIA Jetson nano and Nx get and flash firmware 
 -----------------------------------  
