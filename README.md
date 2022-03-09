@@ -14,6 +14,13 @@ compagnon-software/patchedwfb_on.sh (set air or ground)
 
 copy compagnon-software/wifibroadcast drone.key gs.key  
 
+----------------------------------------------------
+Tested
+
+PI4 (64 bits)
+2022-01-28-raspios-bullseye-arm64-lite.zip
+PI0-2 (32bit)
+2022-01-28-raspios-bullseye-armhf-lite.zip
 
 ----------------------------------------------------
 Previous Raspberry PI get and flash firmware
