@@ -12,7 +12,7 @@ FPS=30
 BITRATE_VIDEO1=3000000
 BITRATE_VIDEO2=3000000
 
-if uname -a | grep -cs "aarch64"> /dev/null 2>&1; then
+#if uname -a | grep -cs "aarch64"> /dev/null 2>&1; then
   gst-launch-1.0 libcamerasrc \
     ! video/x-raw,width=$WIDTH,height=$HEIGHT,format=NV12,colorimetry=bt601,framerate=$FPS/1,interlace-mode=progressive \
     ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=$BITRATE_VIDEO1 \
@@ -20,7 +20,7 @@ if uname -a | grep -cs "aarch64"> /dev/null 2>&1; then
     ! rtph264pay name=pay0 pt=96 config-interval=1 \
     ! udpsink host=127.0.0.1 port=5700 &
   echo $! >> $PIDFILE
-fi
+#fi
 
 #rm /tmp/camera*
 #/home/pi/Projects/RaspiCV/build/raspicv -t 0 -w $WIDTH -h $HEIGHT -fps $FPS/1 -b $BITRATE_VIDEO1 -g $FPS -vf -hf -cd H264 -n -a ENAC -ae 22 -x /dev/null -r /dev/null -rf gray -o - \
