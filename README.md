@@ -19,6 +19,7 @@ Tested
 
 PI4 (64 bits)
 2022-01-28-raspios-bullseye-arm64-lite.zip
+ 
 PI0-2 (32bit)
 2022-01-28-raspios-bullseye-armhf-lite.zip
 
