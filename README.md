@@ -66,12 +66,15 @@ Acquire::http::Proxy "http://proxy.recherche.enac.fr:3128" ;
 Acquire::http::Proxy::debian DIRECT ;  
 Acquire::Ftp::Passive "false";  
 "  
-
-(PI3)  
+  
 /boot/config.txt  
 "  
-dtoverlay=pi3-disable-bt  
+dtoverlay=pi-disable-bt  
 "  
+
+sudo systemctl disable hciuart.service  
+sudo systemctl disable bluetooth.service  
+  
 
 raspi-config  
 "  
