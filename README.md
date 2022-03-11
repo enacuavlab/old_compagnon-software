@@ -94,19 +94,19 @@ raspi-config
 "
 Short startup time replacing dphys-swapfile with the traditional Linux swap mechanism
 
-sudo /etc/init.d/dphys-swapfile stop
-sudo apt-get remove --purge dphys-swapfile
-sudo rm /var/swap
-sudo fallocate -l 4G /var/swapfile
-sudo chmod 600 /var/swapfile
-sudo mkswap /var/swapfile
-sudo swapon /var/swapfile
-sudo vi /etc/fstab
-  /var/swapfile   swap    swap     defaults   0       0
-  tmpfs     /dev/shm       tmpfs     defaults,size=100M     0      0
-
-sudo reboot
-swapon -s
+sudo /etc/init.d/dphys-swapfile stop  
+sudo apt-get remove --purge dphys-swapfile  
+sudo rm /var/swap  
+sudo fallocate -l 4G /var/swapfile  
+sudo chmod 600 /var/swapfile  
+sudo mkswap /var/swapfile  
+sudo swapon /var/swapfile  
+sudo vi /etc/fstab  
+  /var/swapfile   swap    swap     defaults   0       0  
+  tmpfs     /dev/shm       tmpfs     defaults,size=100M     0      0  
+  
+sudo reboot  
+swapon -s  
 "
 
 Reboot  
