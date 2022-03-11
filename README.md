@@ -107,7 +107,7 @@ sudo vi /etc/fstab
   
 sudo reboot  
 swapon -s  
-"
+"  
 
 Reboot  
   
