@@ -85,11 +85,30 @@ raspi-config
   
 4 Performance Options  
 - P3 Overlay File System  
+(first, see below to reduce memshared /dev/shm)
   
 5 Localisation Options  
 - L2 Timezone   
 "  
-  
+
+"
+Short startup time replacing dphys-swapfile with the traditional Linux swap mechanism
+
+sudo /etc/init.d/dphys-swapfile stop
+sudo apt-get remove --purge dphys-swapfile
+sudo rm /var/swap
+sudo fallocate -l 4G /var/swapfile
+sudo chmod 600 /var/swapfile
+sudo mkswap /var/swapfile
+sudo swapon /var/swapfile
+sudo vi /etc/fstab
+  /var/swapfile   swap    swap     defaults   0       0
+  tmpfs     /dev/shm       tmpfs     defaults,size=100M     0      0
+
+sudo reboot
+swapon -s
+"
+
 Reboot  
   
 sudo apt-get update  
@@ -103,6 +122,7 @@ sudo apt-get install gstreamer1.0-libav -y;\
 sudo apt-get install gstreamer1.0-omx -y;\  
 sudo apt-get install gstreamer1.0-tools -y  
 
+----------------------------------------------------
 
 gst-launch-1.0 -vvvv libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12,colorimetry=bt601,framerate=30/1,interlace-mode=progressive ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=3800000 ! 'video/x-h264,level=(string)4' ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=10.42.0.1 port=5000
 
@@ -110,7 +130,6 @@ gst-launch-1.0 udpsrc port=5000 ! application/x-rtp,encoding-name=H264,payload=9
 
 
   
-
 ----------------------------------------------------  
 Previous NVIDIA Jetson nano and Nx get and flash firmware 
 -----------------------------------  
