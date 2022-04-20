@@ -27,39 +27,39 @@ Flash the SD
 
 cd /media/pprz/../boot
 
-echo 'pprz' | openssl passwd -6 -stdin >> userconf.txt
-vi userconf.txt 
-'
-pprz:...
-'
+echo 'pprz' | openssl passwd -6 -stdin >> userconf.txt  
+vi userconf.txt   
+'  
+pprz:...  
+'  
 
-touch ssh
+touch ssh  
 
-vi wpa_supplicant.conf
-"
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-network={
-ssid="feiying"
-psk="pprzpprz"
-"
-(
-key_mgmt=WPA-PSK
-needed ?
-)
-
-
-First boot wait 75 sec, before trying to connect
-
-nmap -sn "HotSpotIP"/24
-=> rasp_IP
-
-ssh pprz@"rasp_IP"
+vi wpa_supplicant.conf  
+"  
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev  
+update_config=1  
+network={  
+ssid="feiying"  
+psk="pprzpprz"  
+"  
+(  
+key_mgmt=WPA-PSK  
+needed ?  
+)  
 
 
-sudo bash -c 'echo "dtoverlay=disable-bt" >> /boot/config.txt'
-sudo systemctl disable hciuart.service
-sudo systemctl disable bluetooth.service
+First boot wait 75 sec, before trying to connect  
+
+nmap -sn "HotSpotIP"/24  
+=> rasp_IP  
+
+ssh pprz@"rasp_IP"  
+
+
+sudo bash -c 'echo "dtoverlay=disable-bt" >> /boot/config.txt'  
+sudo systemctl disable hciuart.service  
+sudo systemctl disable bluetooth.service  
 
 
 Raspi-Config
@@ -72,17 +72,17 @@ I6 Serial Port
 
 Reboot
 
-date -s "..."
-sudo apt-get  update
-sudo apt-get upgrade
+date -s "..."  
+sudo apt-get  update  
+sudo apt-get upgrade 
 
-export http_proxy=http://proxy.recherche.enac.fr:3128
-export https_proxy=http://proxy.recherche.enac.fr:3128
+export http_proxy=http://proxy.recherche.enac.fr:3128  
+export https_proxy=http://proxy.recherche.enac.fr:3128  
 
 ---------------------------------------------------------------------------------
 2) INSTALL COMPAGNON_SOFTWARE 
 --------------------------
-
+See above  
 
 ---------------------------------------------------------------------------------
 3) COMPLETE INSTALLATION AND TEST CAMERA 
@@ -101,23 +101,23 @@ gst-launch-1.0 -vvvv libcamerasrc ! video/x-raw,width=1280,height=720,format=NV1
 gst-launch-1.0 udpsrc port=5000 ! application/x-rtp,encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 
 
-sudo raspi-config
-4 Performance Options
-P3 Overlay File System 
-(overlay + read only boot)
+sudo raspi-config  
+4 Performance Options  
+P3 Overlay File System  
+(overlay + read only boot)  
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Raspi zero: (ARM port max: arm6hf 32b)
-Raspi 1: (ARM port max: arm6hf 32b)
-Raspi 2: ARMv7 CPU (ARM port max: armhf 32b)
-
-Raspi zero 2: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)
-Raspi 3: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)
-Raspi 4: Cortex-A72 quadcore ARMv8 CPU (ARM port max: arm64 64b)
+Raspi zero: (ARM port max: arm6hf 32b)  
+Raspi 1: (ARM port max: arm6hf 32b)  
+Raspi 2: ARMv7 CPU (ARM port max: armhf 32b)  
+  
+Raspi zero 2: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)  
+Raspi 3: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)    
+Raspi 4: Cortex-A72 quadcore ARMv8 CPU (ARM port max: arm64 64b)   
 
 ---------------------------------------------------------------------------------
-TESTED
+TESTED  
 ------
 Linux raspberrypi 5.15.32-v8+ #1538 SMP PREEMPT Thu Mar 31 19:40:39 BST 2022 aarch64 GNU/Linux
 
