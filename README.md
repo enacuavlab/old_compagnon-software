@@ -10,131 +10,122 @@ git clone --recurse-submodules https://github.com/enacuavlab/compagnon-software.
 cd compagnon-software  
 ./install.sh  
 
-compagnon-software/patchedwfb_on.sh (set air or ground)  
+compagnon-software/patched/wfb_on.sh (set air or ground)  
 
 copy compagnon-software/wifibroadcast drone.key gs.key  
 
-----------------------------------------------------
-Tested
+---------------------------------------------------------------------------------
+1) SETTING RASPBERRY PI WITH PI OS Debian 11.3 (bullseye)
+------------------------------------------------------
 
-PI4 (64 bits)
-2022-01-28-raspios-bullseye-arm64-lite.zip
- 
-PI0-2 (32bit)
-2022-01-28-raspios-bullseye-armhf-lite.zip
+Get image file
 
-----------------------------------------------------
-Previous Raspberry PI get and flash firmware
------------------------------------
+https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2022-04-07/2022-04-04-raspios-bullseye-arm64-lite.img.xz
+(283.5 MB)
 
-wget https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip
+Flash the SD
 
-SD plug  
-unzip -p raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip | dd of=/dev/sdX bs=4M conv=fsync status=progress  
+cd /media/pprz/../boot
 
-SD unplug / plug  
-/media/.../root  
-touch ssh  
-sudo vi wpa_supplicant.conf  
-"  
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev  
-update_config=1  
-network={  
-	ssid="feiying"  
-	psk="pprzpprz"       
-	key_mgmt=WPA-PSK
-}  
-"  
-  
-PowerOn hotspot  
-Boot  
-ifconfig (get my_ip)  
-nmap -sn my_ip/24 (get rasp_ip)  
-  
-ssh rasp_ip  
-pwd raspberry  
-  
-/home/pi/.bashrc  
-"  
-export http_proxy=http://proxy.recherche.enac.fr:3128  
-export https_proxy=$http_proxy  
-"  
-  
-/etc/apt/apt.conf.d/10proxy  
-"  
-Acquire::http::Proxy "http://proxy.recherche.enac.fr:3128" ;  
-Acquire::http::Proxy::debian DIRECT ;  
-Acquire::Ftp::Passive "false";  
-"  
-  
-/boot/config.txt  
-"  
-dtoverlay=pi-disable-bt  
-"  
+echo 'pprz' | openssl passwd -6 -stdin >> userconf.txt
+vi userconf.txt 
+'
+pprz:...
+'
 
-sudo systemctl disable hciuart.service  
-sudo systemctl disable bluetooth.service  
-  
+touch ssh
 
-raspi-config  
-"  
-1 System Options  
-- S3 Password  
-- S4 Hostname 
-  
-3 Interface Options  
-- P1 Camera   
-- P6 Serial Port   
-  
-4 Performance Options  
-- P3 Overlay File System  
-(first, see below to reduce memshared /dev/shm)
-  
-5 Localisation Options  
-- L2 Timezone   
-"  
-
+vi wpa_supplicant.conf
 "
-Short startup time replacing dphys-swapfile with the traditional Linux swap mechanism
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+network={
+ssid="feiying"
+psk="pprzpprz"
+"
+(
+key_mgmt=WPA-PSK
+needed ?
+)
 
-sudo /etc/init.d/dphys-swapfile stop  
-sudo apt-get remove --purge dphys-swapfile  
-sudo rm /var/swap  
-sudo fallocate -l 4G /var/swapfile  
-sudo chmod 600 /var/swapfile  
-sudo mkswap /var/swapfile  
-sudo swapon /var/swapfile  
-sudo vi /etc/fstab  
-  /var/swapfile   swap    swap     defaults   0       0  
-  tmpfs     /dev/shm       tmpfs     defaults,size=100M     0      0  
-  
-sudo reboot  
-swapon -s  
-"  
 
-Reboot  
-  
-sudo apt-get update  
-sudo apt-get upgrade  
-  
-sudo apt-get install gstreamer1.0-plugins-base -y;\  
-sudo apt-get install gstreamer1.0-plugins-good -y;\  
-sudo apt-get install gstreamer1.0-plugins-bad -y;\  
-sudo apt-get install gstreamer1.0-plugins-ugly -y;\  
-sudo apt-get install gstreamer1.0-libav -y;\  
-sudo apt-get install gstreamer1.0-omx -y;\  
-sudo apt-get install gstreamer1.0-tools -y  
+First boot wait 75 sec, before trying to connect
 
-----------------------------------------------------
+nmap -sn "HotSpotIP"/24
+=> rasp_IP
+
+ssh pprz@"rasp_IP"
+
+
+sudo bash -c 'echo "dtoverlay=disable-bt" >> /boot/config.txt'
+sudo systemctl disable hciuart.service
+sudo systemctl disable bluetooth.service
+
+
+Raspi-Config
+
+3 Interface Options
+
+I6 Serial Port 
+- The serial login shell is disabled
+- The serial interface is enabled
+
+Reboot
+
+date -s "..."
+sudo apt-get  update
+sudo apt-get upgrade
+
+export http_proxy=http://proxy.recherche.enac.fr:3128
+export https_proxy=http://proxy.recherche.enac.fr:3128
+
+---------------------------------------------------------------------------------
+2) INSTALL COMPAGNON_SOFTWARE 
+--------------------------
+
+
+---------------------------------------------------------------------------------
+3) COMPLETE INSTALLATION AND TEST CAMERA 
+-------------------------------------
+
+sudo apt-get install gstreamer1.0-plugins-base -y;\
+sudo apt-get install gstreamer1.0-plugins-good -y;\
+sudo apt-get install gstreamer1.0-plugins-bad -y;\
+sudo apt-get install gstreamer1.0-plugins-ugly -y;\
+sudo apt-get install gstreamer1.0-libav -y;\
+sudo apt-get install gstreamer1.0-omx -y;\
+sudo apt-get install gstreamer1.0-tools -y
 
 gst-launch-1.0 -vvvv libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12,colorimetry=bt601,framerate=30/1,interlace-mode=progressive ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=3800000 ! 'video/x-h264,level=(string)4' ! rtph264pay name=pay0 pt=96 config-interval=1 ! udpsink host=10.42.0.1 port=5000
 
 gst-launch-1.0 udpsrc port=5000 ! application/x-rtp,encoding-name=H264,payload=96 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 
 
-  
-----------------------------------------------------  
-Previous NVIDIA Jetson nano and Nx get and flash firmware 
------------------------------------  
-  
-To be continue  
+sudo raspi-config
+4 Performance Options
+P3 Overlay File System 
+(overlay + read only boot)
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Raspi zero: (ARM port max: arm6hf 32b)
+Raspi 1: (ARM port max: arm6hf 32b)
+Raspi 2: ARMv7 CPU (ARM port max: armhf 32b)
+
+Raspi zero 2: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)
+Raspi 3: Cortex-A53 quadcore ARMv8 CPU (ARM port max: arm64 64b)
+Raspi 4: Cortex-A72 quadcore ARMv8 CPU (ARM port max: arm64 64b)
+
+---------------------------------------------------------------------------------
+TESTED
+------
+Linux raspberrypi 5.15.32-v8+ #1538 SMP PREEMPT Thu Mar 31 19:40:39 BST 2022 aarch64 GNU/Linux
+
+Raspi 4 (embedded)
+
+Raspi Zero 2
+- Talon 250
+
+Raspi 3 B V1.2 (2005)
+- Explorer 116
+
