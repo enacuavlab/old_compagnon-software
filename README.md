@@ -15,6 +15,10 @@ compagnon-software/patched/wfb_on.sh (set air or ground)
 copy compagnon-software/wifibroadcast drone.key gs.key  
 
 ---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Debian 11.3 (bulleyes) on Raspberry : Board and Ground
+
+---------------------------------------------------------------------------------
 1) SETTING RASPBERRY PI WITH PI OS Debian 11.3 (bullseye)
 ------------------------------------------------------
 
@@ -106,6 +110,76 @@ sudo raspi-config
 P3 Overlay File System  
 (overlay + read only boot)  
 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Ubuntu 20.04 on Raspberry PI4 : Ground with Paparazzi
+  
+https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.4-preinstalled-server-arm64+raspi.img.xz  
+  
+------------------------------------------  
+cd /media/pprz/system-boot  
+  
+touch ssh  
+  
+vi network-config  
+  
+ethernets:  
+  eth0:  
+    dhcp4: true  
+    optional: true  
+  
+wifis:  
+  wlan0:  
+    dhcp4: true  
+    optional: true  
+    access-points:  
+      "Livebox-3218":  
+        password: "k3JEEGtz5mEFT6CtGR"  
+  
+(moved to /etc/netplan/50-cloud-init.yaml after boot  
+write network: {config: disabled} to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg  
+sudo netplan generate  
+sudo netplan apply  
+reboot)  
+  
+------------------------------------------  
+Plug and boot  
+   
+nmap -sn MyIP/24  
+  
+ssh ubuntu@RaspIp  
+(password) ubuntu  
+  
+sudo passwd ubuntu  
+  
+sudo apt-get update  
+sudo apt-get upgrade  
+  
+sudo adduser pprz  
+...  
+sudo adduser pprz sudo  
+  
+sudo deluser --remove-home ubuntu  
+  
+sudo apt install ubuntu-desktop  
+  
+  
+sudo apt install pi-bluetooth  
+/boot/firware/usercfg.txt  
+"  
+include btcfg.txt  
+"  
+  
+sudo vi /boot/firmware/syscfg.txt   
+"   
+dtoverlay=vc4-fkms-v3d  
+"  
+  
+------------------------------------------  
+uname -a  
+Linux groundpi 5.4.0-1052-raspi #58-Ubuntu SMP PREEMPT Mon Feb 7 16:52:35 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux  
+  
+  
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Raspi zero: (ARM port max: arm6hf 32b)  
