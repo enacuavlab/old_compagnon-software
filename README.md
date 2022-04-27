@@ -138,6 +138,12 @@ wifis:
   
 (moved to /etc/netplan/50-cloud-init.yaml after boot  
 write network: {config: disabled} to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg  
+or  
+" 
+network: 
+  version: 2 
+  renderer: NetworkManager 
+"  
 sudo netplan generate  
 sudo netplan apply  
 reboot)  
