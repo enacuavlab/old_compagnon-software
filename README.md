@@ -134,18 +134,18 @@ wifis:
     optional: true  
     access-points:  
       "Livebox-3218":  
-        password: "k3JEEGtz5mEFT6CtGR"  
+        password: "......."  
   
-(moved to /etc/netplan/50-cloud-init.yaml after boot  
-write network: {config: disabled} to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg  
-or  
-" 
+(remove from /etc/netplan/50-cloud-init.yaml after boot  
+write to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg "network: {config: disabled}"  
+?? 
 network: 
   version: 2 
   renderer: NetworkManager 
 "  
 sudo netplan generate  
 sudo netplan apply  
+?? 
 reboot)  
   
 ------------------------------------------  
