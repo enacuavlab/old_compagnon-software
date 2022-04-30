@@ -169,6 +169,7 @@ dtoverlay=vc4-fkms-v3d
 "  
 
 sudo apt install ubuntu-desktop  
+ 
 (remove from /etc/netplan/50-cloud-init.yaml after boot  
 write to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg "network: {config: disabled}"  
 ?? 
