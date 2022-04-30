@@ -181,6 +181,8 @@ sudo netplan generate
 sudo netplan apply  
 ?? 
 reboot)  
+  
+sudo systemctl start ssh 
  
 ------------------------------------------  
 uname -a  
