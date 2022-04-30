@@ -136,18 +136,6 @@ wifis:
       "Livebox-3218":  
         password: "......."  
   
-(remove from /etc/netplan/50-cloud-init.yaml after boot  
-write to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg "network: {config: disabled}"  
-?? 
-network: 
-  version: 2 
-  renderer: NetworkManager 
-"  
-sudo netplan generate  
-sudo netplan apply  
-?? 
-reboot)  
-  
 ------------------------------------------  
 Plug and boot  
    
@@ -162,14 +150,13 @@ sudo apt-get update
 sudo apt-get upgrade  
   
 sudo adduser pprz  
-...  
 sudo adduser pprz sudo  
+ 
+reboot 
   
+login pprz 
 sudo deluser --remove-home ubuntu  
-  
-sudo apt install ubuntu-desktop  
-  
-  
+    
 sudo apt install pi-bluetooth  
 /boot/firware/usercfg.txt  
 "  
@@ -180,7 +167,20 @@ sudo vi /boot/firmware/syscfg.txt
 "   
 dtoverlay=vc4-fkms-v3d  
 "  
-  
+
+sudo apt install ubuntu-desktop  
+(remove from /etc/netplan/50-cloud-init.yaml after boot  
+write to /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg "network: {config: disabled}"  
+?? 
+network: 
+  version: 2 
+  renderer: NetworkManager 
+"  
+sudo netplan generate  
+sudo netplan apply  
+?? 
+reboot)  
+ 
 ------------------------------------------  
 uname -a  
 Linux groundpi 5.4.0-1052-raspi #58-Ubuntu SMP PREEMPT Mon Feb 7 16:52:35 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux  
