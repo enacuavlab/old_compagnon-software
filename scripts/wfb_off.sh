@@ -13,14 +13,23 @@ WLS=()
 
 if ls $DEVICES 1> /dev/null 2>&1; then
 
-  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do 
+  if uname -a | grep -c "4.9.*tegra"> /dev/null 2>&1;then TEGRA=true;
+  else TEGRA=false;fi;
+
+  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do
     wl=`basename $i`
-    ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
-    if [ $ty == "monitor" ]; then
-      WLS+=($wl)
+    if $TEGRA;then
+      ty=`iwconfig $wl | grep -c "Mode:Monitor"`
+      if [ $ty == '1' ];then WLS+=($wl);fi
+    else
+      ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
+      if [ $ty == "monitor" ]; then
+        WLS+=($wl)
+      fi
     fi
   done
 fi
+
 
 if ls $FILES 1> /dev/null 2>&1; then
 
