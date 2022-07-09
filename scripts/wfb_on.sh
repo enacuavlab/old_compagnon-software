@@ -11,11 +11,19 @@ WLS=()
 
 if ls $DEVICES 1> /dev/null 2>&1; then
 
-  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do 
+  if uname -a | grep -c "4.9.*tegra"> /dev/null 2>&1;then TEGRA=true;
+  else TEGRA=false;fi;
+
+  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do
     wl=`basename $i`
-    ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
-    if [[ $ty = "managed" ]]; then
-      WLS+=($wl)
+    if $TEGRA;then
+      ty=`iwconfig $wl | grep -c "Mode:Managed"`
+      if [ $ty == '1' ];then WLS+=($wl);fi
+    else
+      ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
+      if [[ $ty = "managed" ]]; then
+        WLS+=($wl)
+      fi
     fi
   done
 
@@ -41,14 +49,21 @@ if ls $DEVICES 1> /dev/null 2>&1; then
       st=`rfkill --raw | grep $ph | awk '{print $4}'`
       if [ $st == "blocked" ];then `rfkill unblock $nb`;fi
   
-      if uname -a | grep -cs "4.9.201-tegra"> /dev/null 2>&1;then
-        systemctl stop wpa_supplicant.service;systemctl stop NetworkManager.service;fi
-  
-      ifconfig $wl down
-      iw dev $wl set monitor otherbss
-      iw reg set DE
-      ifconfig $wl up
-      iw dev $wl set channel ${CHANNELS[$id]}
+      if $TEGRA;then
+        systemctl stop wpa_supplicant.service
+        systemctl stop NetworkManager.service
+        ifconfig $wl down
+        ifconfig $wl up
+        iwconfig $wl mode monitor
+        iw reg set DE
+        iwconfig $wl channel ${CHANNELS[$id]}
+      else
+        ifconfig $wl down
+        iw dev $wl set monitor otherbss
+        iw reg set DE
+        ifconfig $wl up
+        iw dev $wl set channel ${CHANNELS[$id]}
+      fi
 
       PIDFILE=/tmp/wfb_${id}_${wl}.pid
       touch $PIDFILE
