@@ -13,8 +13,7 @@ WLS=()
 
 if ls $DEVICES 1> /dev/null 2>&1; then
 
-  if uname -a | grep -c "4.9.*tegra"> /dev/null 2>&1;then TEGRA=true;
-  else TEGRA=false;fi;
+  if [[ $(uname -a | grep -c "4.9.*tegra" ) == 1 ]]; then TEGRA=true; else TEGRA=false; fi
 
   for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do
     wl=`basename $i`
