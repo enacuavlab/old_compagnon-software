@@ -11,19 +11,18 @@ WLS=()
 
 if ls $DEVICES 1> /dev/null 2>&1; then
 
-  if uname -a | grep -c "4.9.*tegra"> /dev/null 2>&1;then TEGRA=true;
-  else TEGRA=false;fi;
+  if [[ $(uname -a | grep -c "4.9.*tegra" ) == 1 ]]; then TEGRA=true; else TEGRA=false; fi
 
-  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}');do
+  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}'); do
     wl=`basename $i`
-    if $TEGRA;then
-      ty=`iwconfig $wl | grep -c "Mode:Managed"`
-      if [ $ty == '1' ];then WLS+=($wl);fi
-    else
-      ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
-      if [[ $ty = "managed" ]]; then
-        WLS+=($wl)
+    if $TEGRA; then
+      if [[ $(iwconfig $wl | grep -c "Mode:Managed") == 1 ]]; then WLS+=($wl)
+      else
+        if [[ $(ifconfig | grep -c $wl) == 0 ]]; then WLS+=($wl); fi
       fi
+    else
+       ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
+       if [[ $ty = "managed" ]]; then WLS+=($wl); fi
     fi
   done
 
@@ -68,7 +67,7 @@ if ls $DEVICES 1> /dev/null 2>&1; then
       PIDFILE=/tmp/wfb_${id}_${wl}.pid
       touch $PIDFILE
       $HOME_PRJ/patched/ground.sh $wl $id  > /dev/null 2>&1 &
-      #$HOME_PRJ/patched/air.sh $wl $id  > /dev/null 2>&1 &
+      #$HOME_PRJ/patched/air.sh $wl $PIDFILE  > /dev/null 2>&1 &
       echo $! > $PIDFILE
 
     fi
