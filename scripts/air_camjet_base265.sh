@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Client command to view stream
+#/usr/bin/gst-launch-1.0  udpsrc port=5700 ! application/x-rtp, encoding-name=H265,payload=96 ! rtph265depay ! h265parse ! avdec_h265 ! xvimagesink 
+
 if [ $# != 1 ]; then exit; fi
 PIDFILE=$1
 
