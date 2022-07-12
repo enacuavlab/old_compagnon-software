@@ -1,6 +1,7 @@
 #!/bin/bash
 
-PIDFILE=/tmp/wfb.pid
+if [ $# != 1 ]; then exit; fi
+PIDFILE=$1
 
 if v4l2-ctl -D | grep "Driver name" | grep "tegra-video" 1> /dev/null 2>&1;then
 
