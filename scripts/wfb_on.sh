@@ -15,6 +15,7 @@ if ls $DEVICES 1> /dev/null 2>&1; then
   
   wls=`ls -d $DEVICES/*/`
   for i in $wls;do
+    wl=`basename $i`
     if $TEGRA; then
       if [[ $(iwconfig $wl | grep -c "Mode:Managed") == 1 ]]; then WLS+=($wl)
       else
