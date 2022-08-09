@@ -2,7 +2,7 @@
 
 HOME_PRJ=compagnonsoftwarepath
 
-DEVICES=/sys/class/net/wl*
+DEVICES=/proc/net/rtl88XXau
 FILES=/tmp/wfb_*.pid
 
 CHANNELS=(36 40 44 48)
@@ -12,9 +12,9 @@ WLS=()
 if ls $DEVICES 1> /dev/null 2>&1; then
 
   if [[ $(uname -a | grep -c "4.9.*tegra" ) == 1 ]]; then TEGRA=true; else TEGRA=false; fi
-
-  for i in $(ls -la $DEVICES | grep usb | awk '{print $9}'); do
-    wl=`basename $i`
+  
+  wls=`ls -d $DEVICES/*/`
+  for i in $wls;do
     if $TEGRA; then
       if [[ $(iwconfig $wl | grep -c "Mode:Managed") == 1 ]]; then WLS+=($wl)
       else
