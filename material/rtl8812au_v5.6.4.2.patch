@@ -12,7 +12,7 @@ index ed06a80..a3f63f9 100755
  CONFIG_RTW_ADAPTIVITY_EN = disable
  CONFIG_RTW_ADAPTIVITY_MODE = normal
 diff --git a/hal/rtl8812a/rtl8812a_phycfg.c b/hal/rtl8812a/rtl8812a_phycfg.c
-index 4641688..9f3d801 100644
+index 4641688..f0b4bc4 100644
 --- a/hal/rtl8812a/rtl8812a_phycfg.c
 +++ b/hal/rtl8812a/rtl8812a_phycfg.c
 @@ -39,7 +39,7 @@ int transmit_power_boost = 2;
@@ -31,7 +31,7 @@ index 4641688..9f3d801 100644
 -       if (transmit_power_override != 0)
 -               power_idx = transmit_power_override;
 +       if (rtw_tx_pwr_idx_override)
-+               power_idx = rtw_tx_pwr_idx_override;
++                power_idx = rtw_tx_pwr_idx_override;
         if (power_idx < 1)
                 power_idx = 1;
 
