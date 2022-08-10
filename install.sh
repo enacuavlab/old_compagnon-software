@@ -25,7 +25,7 @@ if [ ! $ANSWER = "y" ] || [ -z $ANSWER ]; then exit -1; fi
 if ! groups | grep -q 'sudo'; then exit -1; fi
 sudo apt-get install -y socat git net-tools wireless-tools rfkill v4l-utils
 cd $PROJ/rtl8812au
-#patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
+patch -p1 < ../material/rtl8812au_v5.6.4.2.patch
 DKMS=false
 if uname -a | grep -cs "Ubuntu"> /dev/null 2>&1;then DKMS=true; fi
 if uname -a | grep -cs "4\.9\.201-tegra"> /dev/null 2>&1;then DKMS=true; fi
