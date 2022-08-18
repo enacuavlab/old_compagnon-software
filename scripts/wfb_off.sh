@@ -1,44 +1,27 @@
 #!/bin/bash
 
-#PIDFILE=/tmp/wfb.pid
-#
-#if [ -f "$PIDFILE" ]; then 
-#  kill `cat $PIDFILE` > /dev/null 2>&1
-#  rm $PIDFILE
-#fi
-
 DEVICES=/proc/net/rtl88XXau
 FILES=/tmp/wfb_*.pid
+
 WLS=()
 
-if ls $DEVICES 1> /dev/null 2>&1; then
+if [ $# == 1 ]; then
 
-  if [[ $(uname -a | grep -c "4.9.*tegra" ) == 1 ]]; then TEGRA=true; else TEGRA=false; fi
-  
-  wls=`ls -d $DEVICES/*/`
-  for i in $wls;do
+  # Call from wfb_on.sh
+
+  subdirs=`ls  -d $DEVICES/*/ 2> /dev/null`
+  for i in $subdirs;do
     wl=`basename $i`
-    if $TEGRA;then
-      ty=`iwconfig $wl | grep -c "Mode:Monitor"`
-      if [ $ty == '1' ];then WLS+=($wl);fi
-    else
-      ty=`iw dev $wl info | grep "type" | awk '{print $2}'`
-      if [ $ty == "monitor" ]; then
-        WLS+=($wl)
-      fi
-    fi
+    if [[ $(ifconfig | grep -c $wl) != 0 ]]; then WLS+=($wl); fi
   done
-fi
 
-
-if ls $FILES 1> /dev/null 2>&1; then
-
-  for pidfile in $FILES; do 
+  subfiles=`ls $FILES 2> /dev/null`
+  for pidfile in $subfiles;do
     toberemove=true
     for wl in ${WLS[@]};do
       if [[ "$pidfile" == "/tmp/wfb_"*"$wl".pid ]]; then
-        toberemove=false 
-	break
+        toberemove=false
+        break;
       fi
     done
     if [ $toberemove == true ]; then
@@ -46,4 +29,26 @@ if ls $FILES 1> /dev/null 2>&1; then
       rm $pidfile
     fi
   done
+
+else
+
+  # Call from systemctl stop
+
+  subdirs=`ls  -d $DEVICES/*/ 2> /dev/null`
+  for i in $subdirs;do
+    wl=`basename $i`
+    if [[ $(ifconfig | grep -c $wl) != 0 ]]; then WLS+=($wl); fi
+  done
+
+  if [[ ! -z "$WLS" ]]; then
+    for wl in ${WLS[@]};do
+      ifconfig $wl down
+    done
+  fi
+
+  subfiles=`ls $FILES 2> /dev/null`
+  for pidfile in $subfiles;do
+    rm $pidfile
+  done
+
 fi
