@@ -12,14 +12,21 @@ FPS=30
 BITRATE_VIDEO1=3000000
 BITRATE_VIDEO2=3000000
 
+
+# For Debian 11.3 (bulleyes) arm64 on Raspberry PI4,3,0V2
+/usr/bin/libcamera-vid -t 0 -n -b 4000000 -g 3 --inline=1 --width $WIDTH --height $HEIGHT --framerate $FPS --rotation 180  -o - \
+  | gst-launch-1.0 fdsrc fd=0 ! h264parse ! rtph264pay ! udpsink host=127.0.0.1 port=5600 > /dev/null 2>&1 &
+echo $! >> $PIDFILE
+
+
 #if uname -a | grep -cs "aarch64"> /dev/null 2>&1; then
-  gst-launch-1.0 libcamerasrc \
-    ! video/x-raw,width=$WIDTH,height=$HEIGHT,format=NV12,colorimetry=bt601,framerate=$FPS/1,interlace-mode=progressive \
-    ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=$BITRATE_VIDEO1 \
-    ! 'video/x-h264,level=(string)4' \
-    ! rtph264pay name=pay0 pt=96 config-interval=1 \
-    ! udpsink host=127.0.0.1 port=5700 &
-  echo $! >> $PIDFILE
+#  gst-launch-1.0 libcamerasrc \
+#    ! video/x-raw,width=$WIDTH,height=$HEIGHT,format=NV12,colorimetry=bt601,framerate=$FPS/1,interlace-mode=progressive \
+#    ! v4l2h264enc extra-controls=controls,repeat_sequence_header=1,video_bitrate=$BITRATE_VIDEO1 \
+#    ! 'video/x-h264,level=(string)4' \
+#    ! rtph264pay name=pay0 pt=96 config-interval=1 \
+#    ! udpsink host=127.0.0.1 port=5700 &
+#  echo $! >> $PIDFILE
 #fi
 
 #rm /tmp/camera*
